@@ -1564,12 +1564,12 @@
                 const userId = this.config.guestMode ? this.state.guestId : this.state.currentUser.id
 
                 const { error } = await this.supabase.from(this.config.tableName).insert([{
-                    line1, line2, line3, story,
-                    image_url: imageUrl,
-                    votes: 0,
-                    user_id: userId
-                    created_at: new Date().toISOString()
-                }])
+    line1, line2, line3, story,
+    image_url: imageUrl,
+    votes: 0,
+    user_id: userId,
+    created_at: new Date().toISOString()
+}])
                 
                 if (error) throw error
 
