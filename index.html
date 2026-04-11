@@ -1198,28 +1198,49 @@
             }
         },
         
-        // 上传图片
-        async uploadImage(file) {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-            const filePath = fileName
-            
-            try {
-                const { error } = await this.supabase.storage
-                    .from(this.config.storageBucket)
-                    .upload(filePath, file)
-                
-                if (error) throw error
-                
-                const { data: urlData } = this.supabase.storage
-                    .from(this.config.storageBucket)
-                    .getPublicUrl(filePath)
-                
-                return urlData.publicUrl
-            } catch (error) {
-                console.error('图片上传失败:', error)
-                throw error
-            }
+
+        
+        // 生成卡片 HTML
+        generateCardHtml(letters) {
+            let html = ''
+            letters.forEach(item => {
+                const id = item.id
+                const line1 = this.escapeHtml(item.line1 || '')
+                const line2 = this.escapeHtml(item.line2 || '')
+                const line3 = this.escapeHtml(item.line3 || '')
+                const story = this.escapeHtml(item.story || '')
+                const imageUrl = item.image_url || ''
+                const votes = item.votes || 0
+                const hasVoted = this.state.votedIds.has(id)
+                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                const isOwner = currentUserId && item.user_id === currentUserId
+
+                let storyHtml = ''
+                if (story) storyHtml += `<div class="story-text"><strong>📖 故事 ·</strong> ${story}</div>`
+                if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy">`
+
+                html += `
+                    <div class="card" data-id="${id}">
+                        ${isOwner ? '<button class="delete-btn" title="删除情书">✖</button>' : ''}
+                        <div class="lines">
+                            <div class="line">${line1}</div>
+                            <div class="line">${line2}</div>
+                            <div class="line">${line3}</div>
+                        </div>
+                        ${storyHtml ? `<button class="story-toggle-btn" data-story-id="${id}">📖 查看故事</button>` : ''}
+                        <div class="story-content" data-story-content="${id}" style="display: none;">
+                            ${storyHtml}
+                        </div>
+                        <div class="vote-section">
+                            <button class="vote-btn" data-id="${id}" ${hasVoted ? 'disabled' : ''}>
+                                ${hasVoted ? '✅ 已提名' : '👍 提名'}
+                            </button>
+                            <span class="vote-count">🏅 ${votes}</span>
+                        </div>
+                    </div>
+                `
+            })
+            return html
         },
         
         // 渲染卡片
@@ -1229,45 +1250,7 @@
                 return
             }
             
-            let html = ''
-            letters.forEach(item => {
-                const id = item.id
-                const line1 = this.escapeHtml(item.line1 || '')
-                const line2 = this.escapeHtml(item.line2 || '')
-                const line3 = this.escapeHtml(item.line3 || '')
-                const story = this.escapeHtml(item.story || '')
-                const imageUrl = item.image_url || ''
-                const votes = item.votes || 0
-                const hasVoted = this.state.votedIds.has(id)
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                const isOwner = currentUserId && item.user_id === currentUserId
-
-                let storyHtml = ''
-                if (story) storyHtml += `<div class="story-text"><strong>📖 故事 ·</strong> ${story}</div>`
-                if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy">`
-
-                html += `
-                    <div class="card" data-id="${id}">
-                        ${isOwner ? '<button class="delete-btn" title="删除情书">✖</button>' : ''}
-                        <div class="lines">
-                            <div class="line">${line1}</div>
-                            <div class="line">${line2}</div>
-                            <div class="line">${line3}</div>
-                        </div>
-                        ${storyHtml ? `<button class="story-toggle-btn" data-story-id="${id}">📖 查看故事</button>` : ''}
-                        <div class="story-content" data-story-content="${id}" style="display: none;">
-                            ${storyHtml}
-                        </div>
-                        <div class="vote-section">
-                            <button class="vote-btn" data-id="${id}" ${hasVoted ? 'disabled' : ''}>
-                                ${hasVoted ? '✅ 已提名' : '👍 提名'}
-                            </button>
-                            <span class="vote-count">🏅 ${votes}</span>
-                        </div>
-                    </div>
-                `
-            })
-            
+            const html = this.generateCardHtml(letters)
             this.elements.cardContainer.innerHTML = html
             this.bindCardEvents()
         },
@@ -1276,44 +1259,7 @@
         appendCards(letters) {
             if (!letters || letters.length === 0) return
             
-            let html = ''
-            letters.forEach(item => {
-                const id = item.id
-                const line1 = this.escapeHtml(item.line1 || '')
-                const line2 = this.escapeHtml(item.line2 || '')
-                const line3 = this.escapeHtml(item.line3 || '')
-                const story = this.escapeHtml(item.story || '')
-                const imageUrl = item.image_url || ''
-                const votes = item.votes || 0
-                const hasVoted = this.state.votedIds.has(id)
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                const isOwner = currentUserId && item.user_id === currentUserId
-
-                let storyHtml = ''
-                if (story) storyHtml += `<div class="story-text"><strong>📖 故事 ·</strong> ${story}</div>`
-                if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy">`
-
-                html += `
-                    <div class="card" data-id="${id}">
-                        ${isOwner ? '<button class="delete-btn" title="删除情书">✖</button>' : ''}
-                        <div class="lines">
-                            <div class="line">${line1}</div>
-                            <div class="line">${line2}</div>
-                            <div class="line">${line3}</div>
-                        </div>
-                        ${storyHtml ? `<button class="story-toggle-btn" data-story-id="${id}">📖 查看故事</button>` : ''}
-                        <div class="story-content" data-story-content="${id}" style="display: none;">
-                            ${storyHtml}
-                        </div>
-                        <div class="vote-section">
-                            <button class="vote-btn" data-id="${id}" ${hasVoted ? 'disabled' : ''}>
-                                ${hasVoted ? '✅ 已提名' : '👍 提名'}
-                            </button>
-                            <span class="vote-count">🏅 ${votes}</span>
-                        </div>
-                    </div>
-                `
-            })
+            const html = this.generateCardHtml(letters)
             
             // 移除加载更多按钮（如果存在）
             document.getElementById('loadMoreBtn')?.remove()
@@ -1386,10 +1332,18 @@
                     if (!confirm('确定删除这封情书吗？')) return
                     
                     try {
+                        // 获取当前用户ID
+                        const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                        if (!currentUserId) {
+                            alert('请先设置昵称')
+                            return
+                        }
+                        
                         const { error } = await this.supabase
                             .from(this.config.tableName)
                             .delete()
                             .eq('id', id)
+                            .eq('user_id', currentUserId) // 确保只能删除自己的内容
                         
                         if (error) throw error
                         
@@ -1400,10 +1354,11 @@
                         
                         card.remove()
                         
-                        // 检查是否需要显示空状态
-                        if (document.querySelectorAll('.card').length === 0) {
-                            this.elements.cardContainer.innerHTML = '<div class="no-data">✨ 还没有情书，快来写下第一封吧 ✨</div>'
-                        }
+                        // 重新加载数据以确保一致性
+                        this.loadData(this.state.currentMode, this.elements.searchInput.value)
+                        
+                        // 显示成功提示
+                        alert('删除成功')
                     } catch (error) {
                         console.error('删除失败:', error)
                         alert('删除失败：' + error.message)
@@ -1492,11 +1447,15 @@
                 }
             } catch (error) {
                 console.error('加载数据失败:', error)
+                const errorMessage = error.message.includes('网络') || error.message.includes('network') 
+                    ? '网络连接失败，请检查网络后重试' 
+                    : '加载失败，请稍后重试'
+                
                 if (!append) {
-                    this.elements.cardContainer.innerHTML = '<div class="status">加载失败，请检查网络或配置</div>'
+                    this.elements.cardContainer.innerHTML = `<div class="status">${errorMessage}</div>`
                 } else {
                     document.getElementById('loadMoreIndicator')?.remove()
-                    this.elements.cardContainer.insertAdjacentHTML('beforeend', '<div class="status">加载更多失败</div>')
+                    this.elements.cardContainer.insertAdjacentHTML('beforeend', `<div class="status">${errorMessage}</div>`)
                 }
             } finally {
                 this.state.isLoading = false
