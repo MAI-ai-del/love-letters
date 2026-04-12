@@ -1421,7 +1421,7 @@
                 const imageUrl = item.image_url || ''
                 const votes = item.votes || 0
                 const hasVoted = this.state.votedIds.has(id)
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                const currentUserId = this.getEffectiveUserId()
                 const isOwner = currentUserId && item.user_id === currentUserId
 
                 let storyHtml = ''
@@ -1546,7 +1546,7 @@
                     if (!id) return
                     
                     // 检查用户是否已设置昵称
-                    const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                    const currentUserId = this.getEffectiveUserId()
                     if (!currentUserId) {
                         alert('请先设置昵称')
                         return
@@ -1814,7 +1814,7 @@
                 }
 
                 // 获取用户 ID（游客模式使用游客 ID）
-                const userId = this.config.guestMode ? this.state.guestId : this.state.currentUser.id
+                const userId = this.getEffectiveUserId()
 
                 const { error } = await this.supabase.from(this.config.tableName).insert([{
                     line1, line2, line3, story,
@@ -2034,6 +2034,13 @@
             }
         },
         
+        // 获取有效的用户ID
+        getEffectiveUserId() {
+            if (this.state.currentUser) return this.state.currentUser.id
+            if (this.state.guestId) return this.state.guestId
+            return null
+        },
+        
         // 打开删除确认模态框
         openDeleteModal(id) {
             this.state.currentDeleteId = id
@@ -2060,7 +2067,7 @@
             
             try {
                 // 获取当前用户ID
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                const currentUserId = this.getEffectiveUserId()
                 if (!currentUserId) {
                     alert('请先设置昵称')
                     this.closeDeleteModal()
@@ -2086,8 +2093,8 @@
                 
                 console.log('情书所有者:', letter.user_id)
                 
-                // 确认用户是否是所有者
-                if (letter.user_id !== currentUserId) {
+                // 确认用户是否是所有者（处理类型差异）
+                if (String(letter.user_id) !== String(currentUserId)) {
                     throw new Error('权限不足，无法删除此情书')
                 }
                 
@@ -2095,6 +2102,7 @@
                     .from(this.config.tableName)
                     .delete()
                     .eq('id', id)
+                    .eq('user_id', String(currentUserId)) // 确保类型一致
                 
                 if (error) {
                     this.logError(error, '删除情书')
@@ -2144,65 +2152,6 @@
             }
         },
         
-        // 关闭删除确认模态框
-        closeDeleteModal() {
-            this.state.currentDeleteId = null
-            if (this.elements.deleteModal) {
-                this.elements.deleteModal.style.display = 'none'
-            }
-        },
-        
-        // 确认删除
-        async confirmDelete() {
-            const id = this.state.currentDeleteId
-            if (!id) {
-                this.closeDeleteModal()
-                return
-            }
-            
-            try {
-                // 获取当前用户ID
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                if (!currentUserId) {
-                    alert('请先设置昵称')
-                    this.closeDeleteModal()
-                    return
-                }
-                
-                console.log('开始删除情书，ID:', id, '用户ID:', currentUserId)
-                
-                const { error } = await this.supabase
-                    .from(this.config.tableName)
-                    .delete()
-                    .eq('id', id)
-                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
-                
-                if (error) {
-                    console.error('删除失败:', error)
-                    throw error
-                }
-                
-                console.log('删除成功，ID:', id)
-                
-                if (this.state.votedIds.has(id)) {
-                    this.state.votedIds.delete(id)
-                    this.saveVotedIds()
-                }
-                
-                // 重新加载数据以确保一致性
-                console.log('重新加载数据')
-                await this.loadData(this.state.currentMode, this.elements.searchInput.value)
-                
-                // 显示成功提示
-                alert('删除成功')
-            } catch (error) {
-                console.error('删除失败:', error)
-                alert('删除失败：' + error.message)
-            } finally {
-                this.closeDeleteModal()
-            }
-        },
-        
         // 切换全选/取消全选
         toggleSelectAll() {
             const checkboxes = document.querySelectorAll('.card-checkbox')
@@ -2226,7 +2175,7 @@
             
             try {
                 // 获取当前用户ID
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                const currentUserId = this.getEffectiveUserId()
                 if (!currentUserId) {
                     alert('请先设置昵称')
                     return
