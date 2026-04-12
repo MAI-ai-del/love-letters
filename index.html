@@ -15,13 +15,41 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Roboto, sans-serif;
         }
+        
+        :root {
+            --bg-color: linear-gradient(145deg, #fff9f7 0%, #ffeef2 100%);
+            --card-bg: white;
+            --text-color: #b13e5c;
+            --border-color: #ffb6c1;
+            --btn-bg: #ffe2e8;
+            --btn-hover: #ffd5de;
+            --input-bg: white;
+            --input-border: #ffb6c1;
+            --status-bg: white;
+            --status-text: #b13e5c;
+        }
+        
+        body.dark-mode {
+            --bg-color: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+            --card-bg: #3d3d3d;
+            --text-color: #ffb6c1;
+            --border-color: #555;
+            --btn-bg: #4a4a4a;
+            --btn-hover: #5a5a5a;
+            --input-bg: #3d3d3d;
+            --input-border: #555;
+            --status-bg: #3d3d3d;
+            --status-text: #ffb6c1;
+        }
+        
         body {
-            background: linear-gradient(145deg, #fff9f7 0%, #ffeef2 100%);
+            background: var(--bg-color);
             min-height: 100vh;
             padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: all 0.3s ease;
         }
         .container {
             max-width: 1300px;
@@ -30,14 +58,45 @@
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .header-left {
+            flex: 1;
+            min-width: 300px;
+            margin-bottom: 1rem;
+        }
+        .header-subtitle {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        .header-right {
+            flex: 0 0 auto;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .header-right {
+                align-items: center !important;
+            }
+            .header-left {
+                text-align: center;
+            }
         }
         .header h1 {
             font-family: 'Dancing Script', cursive;
             font-size: 3.5rem;
-            color: #b13e5c;
+            color: var(--text-color);
             text-shadow: 3px 3px 0 rgba(255,200,210,0.5);
         }
         .auth-buttons {
@@ -45,9 +104,9 @@
             gap: 1rem;
         }
         .auth-btn {
-            background: #ffe2e8;
-            border: 1px solid #ffb6c1;
-            color: #a1314b;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             padding: 0.6rem 1.5rem;
             border-radius: 40px;
             font-weight: 600;
@@ -55,25 +114,25 @@
             transition: 0.1s;
         }
         .auth-btn:hover {
-            background: #ffd5de;
+            background: var(--btn-hover);
         }
         .user-info {
             display: flex;
             align-items: center;
             gap: 1rem;
-            background: white;
+            background: var(--card-bg);
             padding: 0.4rem 1.5rem;
             border-radius: 40px;
-            border: 1px solid #ffb6c1;
+            border: 1px solid var(--border-color);
         }
         .user-email {
-            color: #b13e5c;
+            color: var(--text-color);
             font-weight: 500;
         }
         .logout-btn {
             background: none;
             border: none;
-            color: #a1314b;
+            color: var(--text-color);
             font-size: 1.2rem;
             cursor: pointer;
         }
@@ -95,7 +154,7 @@
             to { opacity: 1; }
         }
         .modal-content {
-            background: white;
+            background: var(--card-bg);
             padding: 2.5rem;
             border-radius: 40px;
             max-width: 400px;
@@ -113,7 +172,7 @@
             right: 20px;
             font-size: 1.8rem;
             cursor: pointer;
-            color: #b13e5c;
+            color: var(--text-color);
             transition: transform 0.2s ease;
         }
         .modal-close:hover {
@@ -121,25 +180,27 @@
         }
         .modal h2 {
             font-family: 'Dancing Script', cursive;
-            color: #b54864;
+            color: var(--text-color);
             margin-bottom: 1.5rem;
             text-align: center;
         }
         .modal-input {
             width: 100%;
             padding: 1rem 1.5rem;
-            border: 2px solid #ffc1ce;
+            border: 2px solid var(--border-color);
             border-radius: 40px;
             font-size: 1rem;
             margin-bottom: 1rem;
             transition: border-color 0.2s ease;
+            background: var(--input-bg);
+            color: var(--text-color);
         }
         .modal-input:focus {
             outline: none;
-            border-color: #ff8da1;
+            border-color: var(--text-color);
         }
         .modal-btn {
-            background: #b13e5c;
+            background: var(--text-color);
             color: white;
             border: none;
             padding: 1rem 2rem;
@@ -152,22 +213,33 @@
             transition: background-color 0.2s ease;
         }
         .modal-btn:hover {
-            background: #9e3550;
+            background: var(--text-color);
+            opacity: 0.9;
         }
         .modal-switch {
             text-align: center;
             margin-top: 1.5rem;
-            color: #7a4b5c;
+            color: var(--text-color);
         }
         .modal-switch span {
-            color: #b13e5c;
+            color: var(--text-color);
             font-weight: 600;
             cursor: pointer;
             text-decoration: underline;
             transition: color 0.2s ease;
         }
         .modal-switch span:hover {
-            color: #9e3550;
+            opacity: 0.8;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        .modal-actions .modal-btn {
+            flex: 1;
+            max-width: 120px;
         }
         .error-message {
             color: #d63031;
@@ -218,19 +290,29 @@
         }
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2.5rem;
             margin-bottom: 3rem;
         }
         .card {
-            background: rgba(255,255,255,0.85);
+            background: var(--card-bg);
             backdrop-filter: blur(12px);
             border-radius: 36px;
-            padding: 2rem 1.8rem 1.8rem;
+            padding: 2.2rem 2rem 2rem;
             box-shadow: 0 25px 35px -12px rgba(180,100,120,0.4);
-            border: 1px solid rgba(255,230,235,0.8);
-            transition: 0.3s;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--text-color), transparent);
         }
         .card:hover {
             transform: translateY(-8px) scale(1.02);
@@ -240,9 +322,9 @@
             position: absolute;
             top: 16px;
             right: 18px;
-            background: #fff0f3;
-            border: 1px solid #ffb3c1;
-            color: #b84c64;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -255,70 +337,109 @@
             transition: all 0.3s ease;
         }
         .delete-btn:hover {
-            background: #ffdbdf;
+            background: var(--btn-hover);
             transform: scale(1.1) rotate(90deg);
         }
         .lines {
-            margin: 0.8rem 0 1.2rem;
+            margin: 1rem 0 1.5rem;
         }
         .line {
-            font-size: 1.4rem;
-            line-height: 2.2rem;
-            color: #3f2d34;
-            margin-bottom: 0.3rem;
+            font-size: 1.5rem;
+            line-height: 2.4rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
             display: flex;
             gap: 8px;
             word-break: break-word;
+            font-weight: 500;
         }
         .line::before {
             content: "❤️";
-            font-size: 1rem;
-            opacity: 0.6;
-            margin-right: 4px;
+            font-size: 1.1rem;
+            opacity: 0.7;
+            margin-right: 6px;
         }
         .story-toggle-btn {
-            background: #ffe2e8;
-            border: 1px solid #ffb6c1;
-            color: #a1314b;
-            padding: 0.5rem 1.2rem;
+            background: var(--btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.6rem 1.4rem;
             border-radius: 40px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            margin: 0.5rem 0 0.8rem;
+            margin: 0.8rem 0 1rem;
             align-self: flex-start;
-            transition: background-color 0.2s ease;
+            transition: all 0.3s ease;
         }
         .story-toggle-btn:hover {
-            background: #ffd5de;
+            background: var(--btn-hover);
+            transform: translateY(-2px);
         }
         .story-content {
-            margin: 0.5rem 0 1rem;
-            padding: 1rem;
+            margin: 0.8rem 0 1.2rem;
+            padding: 1.2rem;
             background: rgba(255,240,240,0.5);
             border-radius: 24px;
             font-size: 1rem;
-            border-left: 4px solid #ffb6c1;
+            border-left: 4px solid var(--text-color);
             display: none;
             animation: fadeIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(180,100,120,0.1);
         }
         .story-text {
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
         }
         .story-text strong {
-            color: #bc4e6b;
+            color: var(--text-color);
             margin-right: 6px;
+            font-weight: 600;
         }
         .story-image {
             max-width: 100%;
-            max-height: 200px;
+            max-height: 220px;
             border-radius: 16px;
-            margin-top: 0.5rem;
+            margin-top: 0.8rem;
             object-fit: cover;
             transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .story-image:hover {
             transform: scale(1.05);
+        }
+        .card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            display: flex;
+            gap: 5px;
+        }
+        .delete-btn {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+        .delete-btn:hover {
+            background: #ff6b6b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
+            opacity: 1;
+        }
+        .delete-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
         }
         .vote-section {
             display: flex;
@@ -621,14 +742,20 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>三行情书 · 提名墙</h1>
-        <div id="authSection">
+        <div class="header-left">
+            <h1>三行情书 · 提名墙</h1>
+            <p class="header-subtitle">用三行文字，传递最真挚的情感</p>
+        </div>
+        <div id="authSection" class="header-right">
             <!-- 游客模式 -->
-            <div class="auth-buttons" id="guestSection" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-                <div id="guestNameDisplay" style="font-size: 1.2rem; color: #a1314b; font-weight: 600;">游客</div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="guestNameInput" placeholder="输入你的昵称" style="padding: 0.8rem 1.2rem; border: 1px solid #ffb6c1; border-radius: 20px; font-size: 1rem;">
+            <div class="auth-buttons" id="guestSection" style="display: flex; flex-direction: column; align-items: flex-end; gap: 1rem;">
+                <div id="guestNameDisplay" style="font-size: 1.2rem; color: var(--text-color); font-weight: 600;">游客</div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="guestNameInput" placeholder="输入你的昵称" style="padding: 0.8rem 1.2rem; border: 1px solid var(--border-color); border-radius: 20px; font-size: 1rem; background: var(--input-bg); color: var(--text-color);">
                     <button id="setGuestNameBtn" class="auth-btn" style="padding: 0.8rem 1.5rem;">设置昵称</button>
+                </div>
+                <div style="display: flex; gap: 0.8rem; align-items: center;">
+                    <button id="themeToggleBtn" class="auth-btn" style="padding: 0.8rem 1.5rem;">🌙 深色模式</button>
                 </div>
             </div>
             <!-- 登录按钮（备用） -->
@@ -653,16 +780,31 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="deleteModalClose">&times;</span>
+            <h2>确认删除</h2>
+            <p>你确定要删除这封情书吗？此操作不可恢复。</p>
+            <div class="modal-actions">
+                <button id="cancelDeleteBtn" class="modal-btn">取消</button>
+                <button id="confirmDeleteBtn" class="modal-btn" style="background: #ff6b6b; color: white;">确认删除</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="tabs">
         <button class="tab-btn active" id="tabHome">🏆 首页推荐</button>
         <button class="tab-btn" id="tabAll">📚 全部情书库</button>
     </div>
     
+
+    
     <div class="sort-section" id="sortSection" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; display: none;">
-        <label style="display: flex; align-items: center; gap: 0.5rem; color: #a1314b;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-color);">
             排序方式：
-            <select id="sortSelect" style="padding: 0.5rem; border: 1px solid #ffb6c1; border-radius: 20px; background: white; color: #a1314b;">
+            <select id="sortSelect" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 20px; background: var(--input-bg); color: var(--text-color);">
                 <option value="newest">最新发布</option>
                 <option value="most_voted">最多提名</option>
             </select>
@@ -733,7 +875,10 @@
             storageBucket: 'loveimages',
             tableName: 'loveletters',
             pageSize: 9,
-            guestMode: true // 启用游客模式
+            guestMode: true, // 启用游客模式
+            maxLineLength: 20, // 每行最大长度
+            maxStoryLength: 200, // 故事最大长度
+            maxImageSize: 2 * 1024 * 1024 // 图片最大大小 (2MB)
         },
         
         // 状态
@@ -747,7 +892,9 @@
             errorLog: [],
             // 游客模式
             guestId: null,
-            guestName: ''
+            guestName: '',
+            // 删除确认
+            currentDeleteId: null
         },
         
         // DOM 元素
@@ -800,10 +947,26 @@
             
             // 备用默认按钮
             defaultLoginBtn: document.getElementById('defaultLoginBtn'),
-            defaultRegisterBtn: document.getElementById('defaultRegisterBtn')
+            defaultRegisterBtn: document.getElementById('defaultRegisterBtn'),
+            // 主题切换按钮
+            themeToggleBtn: document.getElementById('themeToggleBtn'),
+            // 删除确认模态框
+            deleteModal: document.getElementById('deleteModal'),
+            deleteModalClose: document.getElementById('deleteModalClose'),
+            cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
+            confirmDeleteBtn: document.getElementById('confirmDeleteBtn')
+
         },
         
-        // 初始化
+        /**
+         * 初始化应用
+         * 1. 检查 Supabase 配置
+         * 2. 初始化 Supabase 客户端
+         * 3. 加载本地数据和偏好设置
+         * 4. 初始化游客模式
+         * 5. 绑定事件
+         * 6. 加载初始数据
+         */
         async init() {
             try {
                 // 检查 Supabase 配置
@@ -826,6 +989,9 @@
                 
                 // 加载本地提名记录
                 this.loadVotedIds()
+                
+                // 加载主题偏好
+                this.loadThemePreference()
                 
                 // 初始化游客模式
                 this.initGuestMode()
@@ -924,26 +1090,38 @@
             }
         },
         
-        // 加载本地提名记录
-        loadVotedIds() {
-            try {
-                const stored = localStorage.getItem('votedLoveLetters')
-                if (stored) {
-                    this.state.votedIds = new Set(JSON.parse(stored))
+        // 存储操作 - 优化 localStorage 读写
+        storage: {
+            // 保存数据到本地存储
+            save(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data))
+                } catch (error) {
+                    console.error('保存数据失败:', error)
                 }
-            } catch (error) {
-                this.logError(error, '加载本地提名记录')
-                this.state.votedIds = new Set()
+            },
+            
+            // 从本地存储加载数据
+            load(key, defaultValue) {
+                try {
+                    const stored = localStorage.getItem(key)
+                    return stored ? JSON.parse(stored) : defaultValue
+                } catch (error) {
+                    console.error('加载数据失败:', error)
+                    return defaultValue
+                }
             }
+        },
+        
+        // 从本地存储加载提名记录
+        loadVotedIds() {
+            const ids = this.storage.load('votedLoveLetters', [])
+            this.state.votedIds = new Set(ids)
         },
         
         // 保存本地提名记录
         saveVotedIds() {
-            try {
-                localStorage.setItem('votedLoveLetters', JSON.stringify([...this.state.votedIds]))
-            } catch (error) {
-                this.logError(error, '保存本地提名记录')
-            }
+            this.storage.save('votedLoveLetters', [...this.state.votedIds])
         },
         
         // 绑定事件
@@ -964,6 +1142,37 @@
                         }
                     })
                 }
+            }
+            
+            // 主题切换事件
+            if (this.elements.themeToggleBtn) {
+                this.elements.themeToggleBtn.addEventListener('click', () => {
+                    this.toggleTheme()
+                })
+            }
+            
+            // 删除确认模态框事件
+            if (this.elements.deleteModalClose) {
+                this.elements.deleteModalClose.addEventListener('click', () => {
+                    this.closeDeleteModal()
+                })
+            }
+            if (this.elements.cancelDeleteBtn) {
+                this.elements.cancelDeleteBtn.addEventListener('click', () => {
+                    this.closeDeleteModal()
+                })
+            }
+            if (this.elements.confirmDeleteBtn) {
+                this.elements.confirmDeleteBtn.addEventListener('click', () => {
+                    this.confirmDelete()
+                })
+            }
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.addEventListener('click', (e) => {
+                    if (e.target === this.elements.deleteModal) {
+                        this.closeDeleteModal()
+                    }
+                })
             }
             
             // 备用默认按钮
@@ -1217,11 +1426,11 @@
 
                 let storyHtml = ''
                 if (story) storyHtml += `<div class="story-text"><strong>📖 故事 ·</strong> ${story}</div>`
-                if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy">`
+                if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy" decoding="async">`
 
                 html += `
                     <div class="card" data-id="${id}">
-                        ${isOwner ? '<button class="delete-btn" title="删除情书">✖</button>' : ''}
+                        ${isOwner ? `<div class="card-actions"><button class="delete-btn" data-id="${id}" title="删除情书">🗑️ 删除</button></div>` : ''}
                         <div class="lines">
                             <div class="line">${line1}</div>
                             <div class="line">${line2}</div>
@@ -1273,44 +1482,39 @@
         
         // 绑定卡片事件
         bindCardEvents() {
-            // 先移除所有现有的事件监听器，避免重复绑定
-            document.querySelectorAll('.story-toggle-btn').forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true))
-            })
-            document.querySelectorAll('.vote-btn').forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true))
-            })
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true))
-            })
-
-            // 故事展开/折叠
-            document.querySelectorAll('.story-toggle-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+            // 移除现有的事件监听器，避免重复绑定
+            this.elements.cardContainer.replaceWith(this.elements.cardContainer.cloneNode(true))
+            this.elements.cardContainer = document.getElementById('cardContainer')
+            
+            // 故事展开/折叠 - 使用事件委托
+            this.elements.cardContainer.addEventListener('click', (e) => {
+                const storyToggleBtn = e.target.closest('.story-toggle-btn')
+                if (storyToggleBtn) {
                     e.stopPropagation()
-                    const card = btn.closest('.card')
+                    const card = storyToggleBtn.closest('.card')
                     const storyDiv = card.querySelector('.story-content')
                     if (storyDiv.style.display === 'none') {
                         storyDiv.style.display = 'block'
-                        btn.textContent = '📖 收起故事'
+                        storyToggleBtn.textContent = '📖 收起故事'
                     } else {
                         storyDiv.style.display = 'none'
-                        btn.textContent = '📖 查看故事'
+                        storyToggleBtn.textContent = '📖 查看故事'
                     }
-                })
+                }
             })
 
-            // 提名事件
-            document.querySelectorAll('.vote-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
+            // 提名事件 - 使用事件委托
+            this.elements.cardContainer.addEventListener('click', async (e) => {
+                const voteBtn = e.target.closest('.vote-btn')
+                if (voteBtn) {
                     e.stopPropagation()
-                    const id = btn.dataset.id
-                    if (!id || this.state.votedIds.has(id)) return
+                    const id = voteBtn.dataset.id
+                    if (!id || this.state.votedIds.has(id) || voteBtn.disabled) return
                     
                     try {
-                        const originalText = btn.textContent
-                        btn.disabled = true
-                        btn.textContent = '提名中...'
+                        const originalText = voteBtn.textContent
+                        voteBtn.disabled = true
+                        voteBtn.textContent = '提名中...'
                         
                         const { error } = await this.supabase.rpc('increment_votes', { row_id: id })
                         if (error) throw error
@@ -1319,69 +1523,41 @@
                         this.saveVotedIds()
                         
                         // 局部更新，避免重新加载整个列表
-                        const card = btn.closest('.card')
+                        const card = voteBtn.closest('.card')
                         const voteCountElement = card.querySelector('.vote-count')
                         const currentVotes = parseInt(voteCountElement.textContent.match(/\d+/)[0])
                         voteCountElement.textContent = `🏅 ${currentVotes + 1}`
-                        btn.textContent = '✅ 已提名'
+                        voteBtn.textContent = '✅ 已提名'
                     } catch (error) {
                         console.error('提名失败:', error)
                         alert('提名失败：' + error.message)
-                        btn.disabled = false
-                        btn.textContent = '👍 提名'
+                        voteBtn.disabled = false
+                        voteBtn.textContent = '👍 提名'
                     }
-                })
+                }
+            })
+            
+            // 删除事件 - 使用事件委托
+            this.elements.cardContainer.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.delete-btn')
+                if (deleteBtn) {
+                    e.stopPropagation()
+                    const id = deleteBtn.dataset.id
+                    if (!id) return
+                    
+                    // 检查用户是否已设置昵称
+                    const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                    if (!currentUserId) {
+                        alert('请先设置昵称')
+                        return
+                    }
+                    
+                    // 打开删除确认模态框
+                    this.openDeleteModal(id)
+                }
             })
 
-            // 删除事件
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation()
-                    const card = btn.closest('.card')
-                    const id = card?.dataset.id
-                    if (!id) return
-                    if (!confirm('确定删除这封情书吗？')) return
-                    
-                    try {
-                        // 获取当前用户ID
-                        const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                        if (!currentUserId) {
-                            alert('请先设置昵称')
-                            return
-                        }
-                        
-                        console.log('开始删除情书，ID:', id, '用户ID:', currentUserId)
-                        
-                        const { error } = await this.supabase
-                            .from(this.config.tableName)
-                            .delete()
-                            .eq('id', id)
-                            .eq('user_id', currentUserId) // 确保只能删除自己的内容
-                        
-                        if (error) {
-                            console.error('删除失败:', error)
-                            throw error
-                        }
-                        
-                        console.log('删除成功，ID:', id)
-                        
-                        if (this.state.votedIds.has(id)) {
-                            this.state.votedIds.delete(id)
-                            this.saveVotedIds()
-                        }
-                        
-                        // 重新加载数据以确保一致性
-                        console.log('重新加载数据')
-                        await this.loadData(this.state.currentMode, this.elements.searchInput.value)
-                        
-                        // 显示成功提示
-                        alert('删除成功')
-                    } catch (error) {
-                        console.error('删除失败:', error)
-                        alert('删除失败：' + error.message)
-                    }
-                })
-            })
+
         },
         
         // 添加加载更多按钮
@@ -1405,10 +1581,78 @@
             })
         },
         
-        // 加载数据
+        // 缓存数据
+        cache: {
+            data: new Map(),
+            maxSize: 8, // 减少缓存大小，避免内存占用过高
+            
+            // 生成缓存键
+            generateKey(mode, searchText, page, sortBy) {
+                return `${mode}_${searchText}_${page}_${sortBy}`
+            },
+            
+            // 获取缓存数据
+            get(key) {
+                const data = this.data.get(key)
+                // 如果数据存在，将其移到Map的末尾，实现LRU策略
+                if (data) {
+                    this.data.delete(key)
+                    this.data.set(key, data)
+                }
+                return data
+            },
+            
+            // 设置缓存数据
+            set(key, data) {
+                // 如果数据已存在，先删除旧的
+                if (this.data.has(key)) {
+                    this.data.delete(key)
+                }
+                // 添加新数据
+                this.data.set(key, data)
+                // 限制缓存大小，使用LRU策略
+                if (this.data.size > this.maxSize) {
+                    const firstKey = this.data.keys().next().value
+                    this.data.delete(firstKey)
+                }
+            },
+            
+            // 清除缓存
+            clear() {
+                this.data.clear()
+            },
+            
+            // 清除特定模式的缓存
+            clearByMode(mode) {
+                for (const key of this.data.keys()) {
+                    if (key.startsWith(mode + '_')) {
+                        this.data.delete(key)
+                    }
+                }
+            }
+        },
+        
+        /**
+         * 加载数据
+         * @param {string} mode - 模式：'home' 或 'all'
+         * @param {string} searchText - 搜索文本
+         * @param {number} page - 页码
+         * @param {boolean} append - 是否追加数据
+         */
         async loadData(mode, searchText = '', page = 1, append = false) {
             if (this.state.isLoading) return
             this.state.isLoading = true
+            
+            // 生成缓存键
+            const cacheKey = this.cache.generateKey(mode, searchText, page, this.state.sortBy)
+            
+            // 检查缓存
+            const cachedData = this.cache.get(cacheKey)
+            if (cachedData && !append) {
+                this.renderCards(cachedData)
+                this.state.isLoading = false
+                return
+            }
             
             // 显示加载状态
             if (!append) {
@@ -1428,26 +1672,15 @@
                 `)
             }
             
-            let query = this.supabase.from(this.config.tableName).select('*')
-            if (mode === 'home') {
-                query = query.order('votes', { ascending: false }).limit(3)
-            } else {
-                // 根据排序方式排序
-                if (this.state.sortBy === 'most_voted') {
-                    query = query.order('votes', { ascending: false })
-                } else {
-                    query = query.order('created_at', { ascending: false })
-                }
-                if (searchText.trim()) {
-                    query = query.or(`line1.ilike.%${searchText}%,line2.ilike.%${searchText}%,line3.ilike.%${searchText}%,story.ilike.%${searchText}%`)
-                }
-                // 添加分页
-                query = query.range((page - 1) * this.config.pageSize, page * this.config.pageSize - 1)
-            }
+            // 构建查询
+            const query = this.buildQuery(mode, searchText, page)
             
             try {
                 const { data, error } = await query
                 if (error) throw error
+                
+                // 缓存数据
+                this.cache.set(cacheKey, data || [])
                 
                 if (append) {
                     // 移除加载指示器
@@ -1455,6 +1688,7 @@
                     // 追加卡片
                     this.appendCards(data || [])
                 } else {
+                    // 渲染卡片
                     this.renderCards(data || [])
                 }
                 
@@ -1479,6 +1713,76 @@
             }
         },
         
+        // 构建查询
+        buildQuery(mode, searchText, page) {
+            let query = this.supabase.from(this.config.tableName).select('*')
+            
+            if (mode === 'home') {
+                // 首页模式：显示投票最多的3条
+                query = query.order('votes', { ascending: false }).limit(3)
+            } else {
+                // 全部模式：根据排序方式和搜索条件获取数据
+                if (this.state.sortBy === 'most_voted') {
+                    query = query.order('votes', { ascending: false })
+                } else {
+                    query = query.order('created_at', { ascending: false })
+                }
+                if (searchText.trim()) {
+                    query = query.or(`line1.ilike.%${searchText}%,line2.ilike.%${searchText}%,line3.ilike.%${searchText}%,story.ilike.%${searchText}%`)
+                }
+                // 添加分页
+                query = query.range((page - 1) * this.config.pageSize, page * this.config.pageSize - 1)
+            }
+            
+            return query
+        },
+        
+        /**
+         * 验证表单数据
+         * @param {string} line1 - 第一行内容
+         * @param {string} line2 - 第二行内容
+         * @param {string} line3 - 第三行内容
+         * @param {string} story - 故事内容
+         * @param {File} file - 上传的文件
+         * @returns {Object} 验证结果，包含 valid 和 message 属性
+         */
+        validateFormData(line1, line2, line3, story, file) {
+            // 检查必填项
+            if (!line1 || !line2 || !line3) {
+                return { valid: false, message: '三行情书不能为空' }
+            }
+            
+            // 检查长度限制
+            if (line1.length > this.config.maxLineLength || line2.length > this.config.maxLineLength || line3.length > this.config.maxLineLength) {
+                return { valid: false, message: `每行不能超过${this.config.maxLineLength}字` }
+            }
+            
+            if (story.length > this.config.maxStoryLength) {
+                return { valid: false, message: `故事不能超过${this.config.maxStoryLength}字` }
+            }
+            
+            // 检查文件
+            if (file) {
+                if (file.size > this.config.maxImageSize) {
+                    return { valid: false, message: '图片不能超过2MB' }
+                }
+                if (!file.type.startsWith('image/')) {
+                    return { valid: false, message: '请上传图片文件' }
+                }
+            }
+            
+            // 检查敏感词（简单实现）
+            const sensitiveWords = ['敏感词1', '敏感词2']
+            const content = `${line1} ${line2} ${line3} ${story}`
+            for (const word of sensitiveWords) {
+                if (content.includes(word)) {
+                    return { valid: false, message: '内容包含敏感词，请修改后重试' }
+                }
+            }
+            
+            return { valid: true }
+        },
+        
         // 处理表单提交
         async handleSubmit() {
             // 检查是否有游客 ID 或用户 ID
@@ -1493,38 +1797,11 @@
             const story = this.elements.storyInput.value.trim()
             const file = this.elements.imageUpload.files[0]
 
-            // 增强客户端验证
-            if (!line1 || !line2 || !line3) {
-                alert('三行情书不能为空')
+            // 验证表单数据
+            const validation = this.validateFormData(line1, line2, line3, story, file)
+            if (!validation.valid) {
+                alert(validation.message)
                 return
-            }
-            if (line1.length > 20 || line2.length > 20 || line3.length > 20) {
-                alert('每行不能超过20字')
-                return
-            }
-            if (story.length > 200) {
-                alert('故事不能超过200字')
-                return
-            }
-            if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('图片不能超过2MB')
-                    return
-                }
-                if (!file.type.startsWith('image/')) {
-                    alert('请上传图片文件')
-                    return
-                }
-            }
-            
-            // 检查是否包含敏感词（简单实现）
-            const sensitiveWords = ['敏感词1', '敏感词2']
-            const content = `${line1} ${line2} ${line3} ${story}`
-            for (const word of sensitiveWords) {
-                if (content.includes(word)) {
-                    alert('内容包含敏感词，请修改后重试')
-                    return
-                }
             }
 
             this.elements.submitBtn.disabled = true
@@ -1540,20 +1817,23 @@
                 const userId = this.config.guestMode ? this.state.guestId : this.state.currentUser.id
 
                 const { error } = await this.supabase.from(this.config.tableName).insert([{
-    line1, line2, line3, story,
-    image_url: imageUrl,
-    votes: 0,
-    user_id: userId,
-    created_at: new Date().toISOString()
-}])
+                    line1, line2, line3, story,
+                    image_url: imageUrl,
+                    votes: 0,
+                    user_id: userId,
+                    created_at: new Date().toISOString()
+                }])
                 
-                if (error) throw error
+                if (error) {
+                    this.logError(error, '发布情书')
+                    throw new Error(this.getErrorMessage(error))
+                }
 
+                // 清除缓存
+                this.cache.clear()
+                
                 alert('发布成功')
-                this.elements.line1Input.value = this.elements.line2Input.value = this.elements.line3Input.value = this.elements.storyInput.value = ''
-                this.elements.imageUpload.value = ''
-                this.elements.fileName.textContent = '未选择文件'
-                this.updateCounters()
+                this.resetForm()
                 this.loadData(this.state.currentMode, this.elements.searchInput.value)
             } catch (error) {
                 console.error('发布失败:', error)
@@ -1564,12 +1844,86 @@
             }
         },
         
-        // 更新字数统计
+        // 重置表单
+        resetForm() {
+            this.elements.line1Input.value = ''
+            this.elements.line2Input.value = ''
+            this.elements.line3Input.value = ''
+            this.elements.storyInput.value = ''
+            this.elements.imageUpload.value = ''
+            this.elements.fileName.textContent = '未选择文件'
+            this.updateCounters()
+        },
+        
+        // 更新字数统计和实时验证
         updateCounters() {
-            this.elements.line1Counter.textContent = `${this.elements.line1Input.value.length}/20`
-            this.elements.line2Counter.textContent = `${this.elements.line2Input.value.length}/20`
-            this.elements.line3Counter.textContent = `${this.elements.line3Input.value.length}/20`
-            this.elements.storyCounter.textContent = `${this.elements.storyInput.value.length}/200`
+            // 第一行
+            const line1Length = this.elements.line1Input.value.length
+            this.elements.line1Counter.textContent = `${line1Length}/${this.config.maxLineLength}`
+            if (line1Length > this.config.maxLineLength) {
+                this.elements.line1Counter.style.color = '#d63031'
+                this.elements.line1Input.style.borderColor = '#d63031'
+                this.elements.line1Input.style.backgroundColor = 'rgba(214, 48, 49, 0.1)'
+            } else if (line1Length === 0) {
+                this.elements.line1Counter.style.color = '#a1314b'
+                this.elements.line1Input.style.borderColor = '#ffb6c1'
+                this.elements.line1Input.style.backgroundColor = 'var(--input-bg)'
+            } else {
+                this.elements.line1Counter.style.color = '#27ae60'
+                this.elements.line1Input.style.borderColor = '#27ae60'
+                this.elements.line1Input.style.backgroundColor = 'rgba(39, 174, 96, 0.1)'
+            }
+            
+            // 第二行
+            const line2Length = this.elements.line2Input.value.length
+            this.elements.line2Counter.textContent = `${line2Length}/${this.config.maxLineLength}`
+            if (line2Length > this.config.maxLineLength) {
+                this.elements.line2Counter.style.color = '#d63031'
+                this.elements.line2Input.style.borderColor = '#d63031'
+                this.elements.line2Input.style.backgroundColor = 'rgba(214, 48, 49, 0.1)'
+            } else if (line2Length === 0) {
+                this.elements.line2Counter.style.color = '#a1314b'
+                this.elements.line2Input.style.borderColor = '#ffb6c1'
+                this.elements.line2Input.style.backgroundColor = 'var(--input-bg)'
+            } else {
+                this.elements.line2Counter.style.color = '#27ae60'
+                this.elements.line2Input.style.borderColor = '#27ae60'
+                this.elements.line2Input.style.backgroundColor = 'rgba(39, 174, 96, 0.1)'
+            }
+            
+            // 第三行
+            const line3Length = this.elements.line3Input.value.length
+            this.elements.line3Counter.textContent = `${line3Length}/${this.config.maxLineLength}`
+            if (line3Length > this.config.maxLineLength) {
+                this.elements.line3Counter.style.color = '#d63031'
+                this.elements.line3Input.style.borderColor = '#d63031'
+                this.elements.line3Input.style.backgroundColor = 'rgba(214, 48, 49, 0.1)'
+            } else if (line3Length === 0) {
+                this.elements.line3Counter.style.color = '#a1314b'
+                this.elements.line3Input.style.borderColor = '#ffb6c1'
+                this.elements.line3Input.style.backgroundColor = 'var(--input-bg)'
+            } else {
+                this.elements.line3Counter.style.color = '#27ae60'
+                this.elements.line3Input.style.borderColor = '#27ae60'
+                this.elements.line3Input.style.backgroundColor = 'rgba(39, 174, 96, 0.1)'
+            }
+            
+            // 故事
+            const storyLength = this.elements.storyInput.value.length
+            this.elements.storyCounter.textContent = `${storyLength}/${this.config.maxStoryLength}`
+            if (storyLength > this.config.maxStoryLength) {
+                this.elements.storyCounter.style.color = '#d63031'
+                this.elements.storyInput.style.borderColor = '#d63031'
+                this.elements.storyInput.style.backgroundColor = 'rgba(214, 48, 49, 0.1)'
+            } else if (storyLength === 0) {
+                this.elements.storyCounter.style.color = '#a1314b'
+                this.elements.storyInput.style.borderColor = '#ffb6c1'
+                this.elements.storyInput.style.backgroundColor = 'var(--input-bg)'
+            } else {
+                this.elements.storyCounter.style.color = '#27ae60'
+                this.elements.storyInput.style.borderColor = '#27ae60'
+                this.elements.storyInput.style.backgroundColor = 'rgba(39, 174, 96, 0.1)'
+            }
         },
         
         // 转义 HTML
@@ -1588,6 +1942,54 @@
         // 显示错误信息
         showError(message) {
             alert(`错误: ${message}`)
+        },
+        
+        // 错误日志记录
+        logError(error, operation) {
+            console.error(`${operation}失败:`, error)
+            // 可以在这里添加更详细的错误日志记录，比如发送到服务器
+        },
+        
+        // 获取用户友好的错误信息
+        getErrorMessage(error) {
+            if (error.message.includes('网络') || error.message.includes('network') || error.message.includes('connection')) {
+                return '网络连接失败，请检查网络后重试'
+            } else if (error.message.includes('storage') || error.message.includes('file')) {
+                return '图片上传失败，请检查文件大小和类型'
+            } else if (error.message.includes('auth') || error.message.includes('login')) {
+                return '认证失败，请重新登录'
+            } else if (error.message.includes('permission') || error.message.includes('RLS')) {
+                return '权限不足，无法执行此操作'
+            } else if (error.message.includes('rate limit')) {
+                return '操作过于频繁，请稍后再试'
+            } else {
+                return error.message || '操作失败，请稍后再试'
+            }
+        },
+        
+        // 记录删除操作日志
+        logDeleteAction(letterId, userId) {
+            const logEntry = {
+                action: 'delete',
+                letterId: letterId,
+                userId: userId,
+                timestamp: new Date().toISOString(),
+                ip: window.navigator.userAgent,
+                browser: window.navigator.appName,
+                version: window.navigator.appVersion
+            }
+            
+            console.log('删除操作日志:', logEntry)
+            
+            // 可以将日志发送到服务器或存储到本地存储
+            // 这里使用本地存储作为示例
+            const deleteLogs = JSON.parse(localStorage.getItem('deleteLogs') || '[]')
+            deleteLogs.push(logEntry)
+            // 只保留最近100条日志
+            if (deleteLogs.length > 100) {
+                deleteLogs.shift()
+            }
+            localStorage.setItem('deleteLogs', JSON.stringify(deleteLogs))
         },
         
         // 上传图片
@@ -1619,6 +2021,250 @@
                 return false
             }
             return true
+        },
+        
+        // 切换主题
+        toggleTheme() {
+            const isDarkMode = document.body.classList.toggle('dark-mode')
+            // 保存主题偏好到本地存储
+            this.storage.save('darkMode', isDarkMode)
+            // 更新按钮文本
+            if (this.elements.themeToggleBtn) {
+                this.elements.themeToggleBtn.textContent = isDarkMode ? '☀️ 浅色模式' : '🌙 深色模式'
+            }
+        },
+        
+        // 打开删除确认模态框
+        openDeleteModal(id) {
+            this.state.currentDeleteId = id
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.style.display = 'flex'
+            }
+        },
+        
+        // 关闭删除确认模态框
+        closeDeleteModal() {
+            this.state.currentDeleteId = null
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.style.display = 'none'
+            }
+        },
+        
+        // 确认删除
+        async confirmDelete() {
+            const id = this.state.currentDeleteId
+            if (!id) {
+                this.closeDeleteModal()
+                return
+            }
+            
+            try {
+                // 获取当前用户ID
+                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                if (!currentUserId) {
+                    alert('请先设置昵称')
+                    this.closeDeleteModal()
+                    return
+                }
+                
+                console.log('开始删除情书，ID:', id, '用户ID:', currentUserId)
+                
+                // 记录删除操作日志
+                this.logDeleteAction(id, currentUserId)
+                
+                const { error } = await this.supabase
+                    .from(this.config.tableName)
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
+                
+                if (error) {
+                    this.logError(error, '删除情书')
+                    throw new Error(this.getErrorMessage(error))
+                }
+                
+                console.log('删除成功，ID:', id)
+                
+                if (this.state.votedIds.has(id)) {
+                    this.state.votedIds.delete(id)
+                    this.saveVotedIds()
+                }
+                
+                // 清除相关缓存
+                this.cache.clear()
+                
+                // 重新加载数据以确保一致性
+                console.log('重新加载数据')
+                await this.loadData(this.state.currentMode, this.elements.searchInput.value)
+                
+                // 显示成功提示
+                alert('删除成功')
+            } catch (error) {
+                console.error('删除失败:', error)
+                alert('删除失败：' + error.message)
+            } finally {
+                this.closeDeleteModal()
+            }
+        },
+        
+        // 加载主题偏好
+        loadThemePreference() {
+            const isDarkMode = this.storage.load('darkMode', false)
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode')
+                if (this.elements.themeToggleBtn) {
+                    this.elements.themeToggleBtn.textContent = '☀️ 浅色模式'
+                }
+            }
+        },
+        
+        // 打开删除确认模态框
+        openDeleteModal(id) {
+            this.state.currentDeleteId = id
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.style.display = 'flex'
+            }
+        },
+        
+        // 关闭删除确认模态框
+        closeDeleteModal() {
+            this.state.currentDeleteId = null
+            if (this.elements.deleteModal) {
+                this.elements.deleteModal.style.display = 'none'
+            }
+        },
+        
+        // 确认删除
+        async confirmDelete() {
+            const id = this.state.currentDeleteId
+            if (!id) {
+                this.closeDeleteModal()
+                return
+            }
+            
+            try {
+                // 获取当前用户ID
+                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                if (!currentUserId) {
+                    alert('请先设置昵称')
+                    this.closeDeleteModal()
+                    return
+                }
+                
+                console.log('开始删除情书，ID:', id, '用户ID:', currentUserId)
+                
+                const { error } = await this.supabase
+                    .from(this.config.tableName)
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
+                
+                if (error) {
+                    console.error('删除失败:', error)
+                    throw error
+                }
+                
+                console.log('删除成功，ID:', id)
+                
+                if (this.state.votedIds.has(id)) {
+                    this.state.votedIds.delete(id)
+                    this.saveVotedIds()
+                }
+                
+                // 重新加载数据以确保一致性
+                console.log('重新加载数据')
+                await this.loadData(this.state.currentMode, this.elements.searchInput.value)
+                
+                // 显示成功提示
+                alert('删除成功')
+            } catch (error) {
+                console.error('删除失败:', error)
+                alert('删除失败：' + error.message)
+            } finally {
+                this.closeDeleteModal()
+            }
+        },
+        
+        // 切换全选/取消全选
+        toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.card-checkbox')
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked)
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked
+            })
+        },
+        
+        // 批量删除
+        async batchDelete() {
+            const selectedCheckboxes = document.querySelectorAll('.card-checkbox:checked')
+            if (selectedCheckboxes.length === 0) {
+                alert('请先选择要删除的情书')
+                return
+            }
+            
+            if (!confirm(`确定要删除选中的 ${selectedCheckboxes.length} 封情书吗？`)) {
+                return
+            }
+            
+            try {
+                // 获取当前用户ID
+                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                if (!currentUserId) {
+                    alert('请先设置昵称')
+                    return
+                }
+                
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.id)
+                console.log('开始批量删除情书，IDs:', selectedIds, '用户ID:', currentUserId)
+                
+                // 批量删除操作 - 使用 in 操作符一次性删除多个ID
+                const { error } = await this.supabase
+                    .from(this.config.tableName)
+                    .delete()
+                    .in('id', selectedIds)
+                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
+                
+                if (error) {
+                    console.error('批量删除失败:', error)
+                    throw error
+                }
+                
+                // 更新本地提名记录
+                selectedIds.forEach(id => {
+                    if (this.state.votedIds.has(id)) {
+                        this.state.votedIds.delete(id)
+                    }
+                })
+                
+                this.saveVotedIds()
+                
+                // 清除相关缓存
+                this.cache.clear()
+                
+                // 重新加载数据以确保一致性
+                console.log('重新加载数据')
+                await this.loadData(this.state.currentMode, this.elements.searchInput.value)
+                
+                // 显示成功提示
+                alert(`成功删除 ${selectedIds.length} 封情书`)
+            } catch (error) {
+                console.error('批量删除失败:', error)
+                alert('批量删除失败：' + error.message)
+            }
+        },
+        
+        // 显示/隐藏批量操作区域
+        updateBatchActionsVisibility() {
+            if (this.elements.batchActions) {
+                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+                const hasOwnerCards = document.querySelector('.card-checkbox') !== null
+                
+                if (currentUserId && hasOwnerCards) {
+                    this.elements.batchActions.style.display = 'flex'
+                } else {
+                    this.elements.batchActions.style.display = 'none'
+                }
+            }
         }
     }
     
