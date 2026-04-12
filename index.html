@@ -2072,11 +2072,29 @@
                 // 记录删除操作日志
                 this.logDeleteAction(id, currentUserId)
                 
+                // 先获取情书信息，确认用户是否是所有者
+                const { data: letter, error: fetchError } = await this.supabase
+                    .from(this.config.tableName)
+                    .select('user_id')
+                    .eq('id', id)
+                    .single()
+                
+                if (fetchError) {
+                    this.logError(fetchError, '获取情书信息')
+                    throw new Error('获取情书信息失败')
+                }
+                
+                console.log('情书所有者:', letter.user_id)
+                
+                // 确认用户是否是所有者
+                if (letter.user_id !== currentUserId) {
+                    throw new Error('权限不足，无法删除此情书')
+                }
+                
                 const { error } = await this.supabase
                     .from(this.config.tableName)
                     .delete()
                     .eq('id', id)
-                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
                 
                 if (error) {
                     this.logError(error, '删除情书')
