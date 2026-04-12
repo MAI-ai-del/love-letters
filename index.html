@@ -1323,48 +1323,57 @@
             })
 
             // 删除事件
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.stopPropagation()
-                    const card = btn.closest('.card')
-                    const id = card?.dataset.id
-                    if (!id) return
-                    if (!confirm('确定删除这封情书吗？')) return
-                    
-                    try {
-                        // 获取当前用户ID
-                        const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                        if (!currentUserId) {
-                            alert('请先设置昵称')
-                            return
-                        }
-                        
-                        const { error } = await this.supabase
-                            .from(this.config.tableName)
-                            .delete()
-                            .eq('id', id)
-                            .eq('user_id', currentUserId) // 确保只能删除自己的内容
-                        
-                        if (error) throw error
-                        
-                        if (this.state.votedIds.has(id)) {
-                            this.state.votedIds.delete(id)
-                            this.saveVotedIds()
-                        }
-                        
-                        card.remove()
-                        
-                        // 重新加载数据以确保一致性
-                        this.loadData(this.state.currentMode, this.elements.searchInput.value)
-                        
-                        // 显示成功提示
-                        alert('删除成功')
-                    } catch (error) {
-                        console.error('删除失败:', error)
-                        alert('删除失败：' + error.message)
-                    }
-                })
-            })
+document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.stopPropagation()
+        const card = btn.closest('.card')
+        const id = card?.dataset.id
+        if (!id) return
+        if (!confirm('确定删除这封情书吗？')) return
+        
+        try {
+            // 获取当前用户ID
+            const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
+            if (!currentUserId) {
+                alert('请先设置昵称')
+                return
+            }
+            
+            console.log('开始删除情书，ID:', id, '用户ID:', currentUserId)
+            
+            const { error } = await this.supabase
+                .from(this.config.tableName)
+                .delete()
+                .eq('id', id)
+                .eq('user_id', currentUserId) // 确保只能删除自己的内容
+            
+            if (error) {
+                console.error('删除失败:', error)
+                throw error
+            }
+            
+            console.log('删除成功，ID:', id)
+            
+            if (this.state.votedIds.has(id)) {
+                this.state.votedIds.delete(id)
+                this.saveVotedIds()
+            }
+            
+            // 先从页面中移除卡片
+            card.remove()
+            
+            // 重新加载数据以确保一致性
+            console.log('重新加载数据')
+            await this.loadData(this.state.currentMode, this.elements.searchInput.value)
+            
+            // 显示成功提示
+            alert('删除成功')
+        } catch (error) {
+            console.error('删除失败:', error)
+            alert('删除失败：' + error.message)
+        }
+    })
+})
         },
         
         // 添加加载更多按钮
