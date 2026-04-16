@@ -554,11 +554,15 @@
             border-radius: 20px;
         }
         .file-upload {
-            margin: 1.5rem 0;
+            margin: 1rem 0;
             display: flex;
             align-items: center;
             gap: 1rem;
             flex-wrap: wrap;
+            padding: 1rem;
+            background: rgba(255,240,240,0.5);
+            border-radius: 30px;
+            border: 1px solid #ffd9df;
         }
         .file-label {
             background: #ffe2e8;
@@ -572,10 +576,13 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
+            flex: 0 0 auto;
         }
         .file-label:hover {
             background: #ffd5de;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(180,100,120,0.2);
         }
         .file-label input {
             display: none;
@@ -583,10 +590,15 @@
         .file-name {
             color: #7a4b5c;
             font-size: 0.95rem;
-            max-width: 200px;
+            max-width: 300px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            flex: 1 1 auto;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #ffb6c1;
         }
         .btn-submit {
             background: #b13e5c;
@@ -852,6 +864,20 @@
                     </label>
                     <span class="file-name" id="fileName">未选择文件</span>
                 </div>
+                <div class="file-upload">
+                    <label class="file-label">
+                        📹 选择视频（可选）
+                        <input type="file" id="videoUpload" accept="video/*">
+                    </label>
+                    <span class="file-name" id="videoName">未选择文件</span>
+                </div>
+                <div class="file-upload">
+                    <label class="file-label">
+                        🎤 选择语音（可选）
+                        <input type="file" id="audioUpload" accept="audio/*">
+                    </label>
+                    <span class="file-name" id="audioName">未选择文件</span>
+                </div>
                 <div style="text-align: center;">
                     <button type="submit" class="btn-submit" id="submitBtn">💌 发布情书</button>
                 </div>
@@ -878,7 +904,9 @@
             guestMode: true, // 启用游客模式
             maxLineLength: 20, // 每行最大长度
             maxStoryLength: 200, // 故事最大长度
-            maxImageSize: 2 * 1024 * 1024 // 图片最大大小 (2MB)
+            maxImageSize: 2 * 1024 * 1024, // 图片最大大小 (2MB)
+            maxVideoSize: 10 * 1024 * 1024, // 视频最大大小 (10MB)
+            maxAudioSize: 5 * 1024 * 1024 // 音频最大大小 (5MB)
         },
         
         // 状态
@@ -918,7 +946,11 @@
             line3Input: document.getElementById('line3'),
             storyInput: document.getElementById('story'),
             imageUpload: document.getElementById('imageUpload'),
+            videoUpload: document.getElementById('videoUpload'),
+            audioUpload: document.getElementById('audioUpload'),
             fileName: document.getElementById('fileName'),
+            videoName: document.getElementById('videoName'),
+            audioName: document.getElementById('audioName'),
             submitBtn: document.getElementById('submitBtn'),
             
             // 计数器
@@ -1193,6 +1225,12 @@
             this.elements.imageUpload.addEventListener('change', (e) => {
                 this.elements.fileName.textContent = e.target.files.length ? e.target.files[0].name : '未选择文件'
             })
+            this.elements.videoUpload.addEventListener('change', (e) => {
+                this.elements.videoName.textContent = e.target.files.length ? e.target.files[0].name : '未选择文件'
+            })
+            this.elements.audioUpload.addEventListener('change', (e) => {
+                this.elements.audioName.textContent = e.target.files.length ? e.target.files[0].name : '未选择文件'
+            })
             
             // 模态框
             this.elements.modalClose.addEventListener('click', () => this.closeModal())
@@ -1419,6 +1457,8 @@
                 const line3 = this.escapeHtml(item.line3 || '')
                 const story = this.escapeHtml(item.story || '')
                 const imageUrl = item.image_url || ''
+                const videoUrl = item.video_url || ''
+                const audioUrl = item.audio_url || ''
                 const votes = item.votes || 0
                 const hasVoted = this.state.votedIds.has(id)
                 const currentUserId = this.getEffectiveUserId()
@@ -1427,6 +1467,8 @@
                 let storyHtml = ''
                 if (story) storyHtml += `<div class="story-text"><strong>📖 故事 ·</strong> ${story}</div>`
                 if (imageUrl) storyHtml += `<img src="${imageUrl}" alt="配图" class="story-image" loading="lazy" decoding="async">`
+                if (videoUrl) storyHtml += `<video src="${videoUrl}" controls class="story-image" style="margin-top: 0.8rem; border-radius: 16px; max-width: 100%; max-height: 220px;"></video>`
+                if (audioUrl) storyHtml += `<audio src="${audioUrl}" controls style="margin-top: 0.8rem; width: 100%;"></audio>`
 
                 html += `
                     <div class="card" data-id="${id}">
@@ -1737,16 +1779,29 @@
             return query
         },
         
+        // 验证文件
+        validateFile(file, type, maxSize, typePrefix) {
+            if (file.size > maxSize) {
+                return { valid: false, message: `${type}不能超过${(maxSize / 1024 / 1024).toFixed(0)}MB` }
+            }
+            if (!file.type.startsWith(typePrefix)) {
+                return { valid: false, message: `请上传${type}文件` }
+            }
+            return { valid: true }
+        },
+        
         /**
          * 验证表单数据
          * @param {string} line1 - 第一行内容
          * @param {string} line2 - 第二行内容
          * @param {string} line3 - 第三行内容
          * @param {string} story - 故事内容
-         * @param {File} file - 上传的文件
+         * @param {File} imageFile - 上传的图片文件
+         * @param {File} videoFile - 上传的视频文件
+         * @param {File} audioFile - 上传的音频文件
          * @returns {Object} 验证结果，包含 valid 和 message 属性
          */
-        validateFormData(line1, line2, line3, story, file) {
+        validateFormData(line1, line2, line3, story, imageFile, videoFile, audioFile) {
             // 检查必填项
             if (!line1 || !line2 || !line3) {
                 return { valid: false, message: '三行情书不能为空' }
@@ -1761,14 +1816,22 @@
                 return { valid: false, message: `故事不能超过${this.config.maxStoryLength}字` }
             }
             
-            // 检查文件
-            if (file) {
-                if (file.size > this.config.maxImageSize) {
-                    return { valid: false, message: '图片不能超过2MB' }
-                }
-                if (!file.type.startsWith('image/')) {
-                    return { valid: false, message: '请上传图片文件' }
-                }
+            // 检查图片文件
+            if (imageFile) {
+                const validation = this.validateFile(imageFile, '图片', this.config.maxImageSize, 'image/')
+                if (!validation.valid) return validation
+            }
+            
+            // 检查视频文件
+            if (videoFile) {
+                const validation = this.validateFile(videoFile, '视频', this.config.maxVideoSize, 'video/')
+                if (!validation.valid) return validation
+            }
+            
+            // 检查音频文件
+            if (audioFile) {
+                const validation = this.validateFile(audioFile, '音频', this.config.maxAudioSize, 'audio/')
+                if (!validation.valid) return validation
             }
             
             // 检查敏感词（简单实现）
@@ -1795,10 +1858,12 @@
             const line2 = this.elements.line2Input.value.trim()
             const line3 = this.elements.line3Input.value.trim()
             const story = this.elements.storyInput.value.trim()
-            const file = this.elements.imageUpload.files[0]
+            const imageFile = this.elements.imageUpload.files[0]
+            const videoFile = this.elements.videoUpload.files[0]
+            const audioFile = this.elements.audioUpload.files[0]
 
             // 验证表单数据
-            const validation = this.validateFormData(line1, line2, line3, story, file)
+            const validation = this.validateFormData(line1, line2, line3, story, imageFile, videoFile, audioFile)
             if (!validation.valid) {
                 alert(validation.message)
                 return
@@ -1809,8 +1874,17 @@
             
             try {
                 let imageUrl = ''
-                if (file) {
-                    imageUrl = await this.uploadImage(file)
+                let videoUrl = ''
+                let audioUrl = ''
+                
+                if (imageFile) {
+                    imageUrl = await this.uploadFile(imageFile, 'image')
+                }
+                if (videoFile) {
+                    videoUrl = await this.uploadFile(videoFile, 'video')
+                }
+                if (audioFile) {
+                    audioUrl = await this.uploadFile(audioFile, 'audio')
                 }
 
                 // 获取用户 ID（游客模式使用游客 ID）
@@ -1819,6 +1893,8 @@
                 const { error } = await this.supabase.from(this.config.tableName).insert([{
                     line1, line2, line3, story,
                     image_url: imageUrl,
+                    video_url: videoUrl,
+                    audio_url: audioUrl,
                     votes: 0,
                     user_id: userId,
                     created_at: new Date().toISOString()
@@ -1851,7 +1927,11 @@
             this.elements.line3Input.value = ''
             this.elements.storyInput.value = ''
             this.elements.imageUpload.value = ''
+            this.elements.videoUpload.value = ''
+            this.elements.audioUpload.value = ''
             this.elements.fileName.textContent = '未选择文件'
+            this.elements.videoName.textContent = '未选择文件'
+            this.elements.audioName.textContent = '未选择文件'
             this.updateCounters()
         },
         
@@ -1992,8 +2072,8 @@
             localStorage.setItem('deleteLogs', JSON.stringify(deleteLogs))
         },
         
-        // 上传图片
-        async uploadImage(file) {
+        // 上传文件
+        async uploadFile(file, type) {
             try {
                 const fileName = `${Date.now()}-${file.name}`
                 const { data, error } = await this.supabase.storage
@@ -2009,8 +2089,8 @@
                 
                 return urlData.publicUrl
             } catch (error) {
-                this.logError(error, '上传图片')
-                throw new Error('图片上传失败')
+                this.logError(error, `上传${type}文件`)
+                throw new Error(`${type}文件上传失败`)
             }
         },
         
