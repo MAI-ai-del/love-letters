@@ -2075,18 +2075,22 @@
         // 上传文件
         async uploadFile(file, type) {
             try {
-                const fileName = `${Date.now()}-${file.name}`
+                // 提取文件扩展名
+                const ext = file.name.split('.').pop() || ''
+                // 生成纯数字+字母的安全文件名
+                const safeFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
+                const fileName = ext ? `${safeFileName}.${ext}` : safeFileName
+
                 const { data, error } = await this.supabase.storage
                     .from(this.config.storageBucket)
                     .upload(fileName, file)
-                
+
                 if (error) throw error
-                
-                // 获取公共 URL
+
                 const { data: urlData } = await this.supabase.storage
                     .from(this.config.storageBucket)
                     .getPublicUrl(fileName)
-                
+
                 return urlData.publicUrl
             } catch (error) {
                 this.logError(error, `上传${type}文件`)
