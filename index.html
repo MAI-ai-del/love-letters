@@ -2664,64 +2664,84 @@
             
             bindEvents() {
                 // 宠物点击事件
-                this.elements.petCharacter.addEventListener('click', () => {
-                    this.togglePetWindow();
-                });
+                if (this.elements.petCharacter) {
+                    this.elements.petCharacter.addEventListener('click', () => {
+                        this.togglePetWindow();
+                    });
+                }
                 
                 // 关闭窗口
-                this.elements.closePetWindow.addEventListener('click', () => {
-                    this.elements.petWindow.style.display = 'none';
-                });
+                if (this.elements.closePetWindow) {
+                    this.elements.closePetWindow.addEventListener('click', () => {
+                        this.elements.petWindow.style.display = 'none';
+                    });
+                }
                 
                 // 发送按钮
-                this.elements.petSendBtn.addEventListener('click', () => {
-                    this.handleCommand(this.elements.petInput.value);
-                    this.elements.petInput.value = '';
-                });
-                
-                // 输入框回车
-                this.elements.petInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
+                if (this.elements.petSendBtn && this.elements.petInput) {
+                    this.elements.petSendBtn.addEventListener('click', () => {
                         this.handleCommand(this.elements.petInput.value);
                         this.elements.petInput.value = '';
-                    }
-                });
+                    });
+                }
+                
+                // 输入框回车
+                if (this.elements.petInput) {
+                    this.elements.petInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.handleCommand(this.elements.petInput.value);
+                            this.elements.petInput.value = '';
+                        }
+                    });
+                }
                 
                 // 语音按钮
-                this.elements.petVoiceBtn.addEventListener('click', () => {
-                    this.startVoiceRecognition();
-                });
+                if (this.elements.petVoiceBtn) {
+                    this.elements.petVoiceBtn.addEventListener('click', () => {
+                        this.startVoiceRecognition();
+                    });
+                }
                 
                 // 指令按钮
-                this.elements.commandBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const command = btn.dataset.command;
-                        this.handleCommand(command);
+                if (this.elements.commandBtns && this.elements.commandBtns.length > 0) {
+                    this.elements.commandBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const command = btn.dataset.command;
+                            this.handleCommand(command);
+                        });
                     });
-                });
+                }
                 
                 // 自定义按钮
-                this.elements.customizePetBtn.addEventListener('click', () => {
-                    this.openEditor();
-                });
+                if (this.elements.customizePetBtn) {
+                    this.elements.customizePetBtn.addEventListener('click', () => {
+                        this.openEditor();
+                    });
+                }
                 
                 // 编辑器事件
-                this.elements.savePetBtn.addEventListener('click', () => {
-                    this.savePetConfig();
-                    this.closeEditor();
-                });
+                if (this.elements.savePetBtn) {
+                    this.elements.savePetBtn.addEventListener('click', () => {
+                        this.savePetConfig();
+                        this.closeEditor();
+                    });
+                }
                 
-                this.elements.cancelPetBtn.addEventListener('click', () => {
-                    this.closeEditor();
-                });
+                if (this.elements.cancelPetBtn) {
+                    this.elements.cancelPetBtn.addEventListener('click', () => {
+                        this.closeEditor();
+                    });
+                }
                 
                 // 宠物类型选择
-                this.elements.petTypeBtns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const type = btn.dataset.type;
-                        this.selectPetType(type);
+                if (this.elements.petTypeBtns && this.elements.petTypeBtns.length > 0) {
+                    this.elements.petTypeBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const type = btn.dataset.type;
+                            this.selectPetType(type);
+                        });
                     });
-                });
+                }
             }
             
             checkSpeechSupport() {
