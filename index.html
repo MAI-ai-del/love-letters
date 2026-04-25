@@ -214,58 +214,1222 @@ class PetModule {
     
     // ---- 配置存储 ----
     loadConfig() {
-        const saved = localStorage.getItem('petConfig_v2');
+        const saved = localStorage.getItem('petConfig_v3');
         if (saved) return JSON.parse(saved);
         return {
             type: 'cat',
+            name: '小宠物',
+            color: '#ffb6c1',
             head: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+            ears: {
+                left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+            },
+            face: {
+                eyes: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                nose: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                mouth: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+            },
+            paws: {
+                front_left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                front_right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                back_left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                back_right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+            },
+            tail: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
             parts: {
                 head: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
                 torso: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
                 arm_left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
                 arm_right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
                 leg_left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
-                leg_right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+                leg_right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                hands: {
+                    left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                    right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+                },
+                feet: {
+                    left: { image: '', scale: 1, rotate: 0, x: 0, y: 0 },
+                    right: { image: '', scale: 1, rotate: 0, x: 0, y: 0 }
+                }
             }
         };
     }
     saveConfig() {
-        localStorage.setItem('petConfig_v2', JSON.stringify(this.currentConfig));
-        // 简单云端同步（如果有 App.supabase）
-        try { if (App && App.supabase) { /* 保存到 pet_config 表 */ } } catch(e){}
+        localStorage.setItem('petConfig_v3', JSON.stringify(this.currentConfig));
+        try { if (App && App.supabase) { this.syncToCloud(); } } catch(e){}
     }
     
-    // ---- 渲染宠物 ----
+    async syncToCloud() { }
+    
+    // ========== 骨骼系统 ==========
+    createAnimalSkeleton() {
+        const root = document.createElement('div');
+        root.className = 'skeleton-root';
+        const torso = document.createElement('div');
+        torso.className = 'joint-torso';
+        torso.style.transformOrigin = '50% 50%';
+        root.appendChild(torso);
+        const head = document.createElement('div');
+        head.className = 'joint-head';
+        head.style.transformOrigin = '50% 100%';
+        head.style.position = 'absolute';
+        head.style.top = '-45px';
+        head.style.left = '50%';
+        head.style.transform = 'translateX(-50%)';
+        torso.appendChild(head);
+        
+        // 添加耳朵
+        const earLeft = this.createEar('left');
+        earLeft.style.position = 'absolute';
+        earLeft.style.top = '-10px';
+        earLeft.style.left = '-5px';
+        head.appendChild(earLeft);
+        
+        const earRight = this.createEar('right');
+        earRight.style.position = 'absolute';
+        earRight.style.top = '-10px';
+        earRight.style.right = '-5px';
+        head.appendChild(earRight);
+        
+        // 添加面部特征
+        const face = this.createFace();
+        face.style.position = 'absolute';
+        face.style.top = '15px';
+        face.style.left = '50%';
+        face.style.transform = 'translateX(-50%)';
+        head.appendChild(face);
+        const forelimbLeft = this.createLimbPair('forelimb', 'left');
+        forelimbLeft.style.position = 'absolute';
+        forelimbLeft.style.top = '15px';
+        forelimbLeft.style.left = '10px';
+        torso.appendChild(forelimbLeft);
+        const forelimbRight = this.createLimbPair('forelimb', 'right');
+        forelimbRight.style.position = 'absolute';
+        forelimbRight.style.top = '15px';
+        forelimbRight.style.right = '10px';
+        torso.appendChild(forelimbRight);
+        const hindlimbLeft = this.createLimbPair('hindlimb', 'left');
+        hindlimbLeft.style.position = 'absolute';
+        hindlimbLeft.style.bottom = '5px';
+        hindlimbLeft.style.left = '12px';
+        torso.appendChild(hindlimbLeft);
+        const hindlimbRight = this.createLimbPair('hindlimb', 'right');
+        hindlimbRight.style.position = 'absolute';
+        hindlimbRight.style.bottom = '5px';
+        hindlimbRight.style.right = '12px';
+        torso.appendChild(hindlimbRight);
+        const tail = this.createTail(3);
+        tail.style.position = 'absolute';
+        tail.style.bottom = '25px';
+        tail.style.right = '-5px';
+        torso.appendChild(tail);
+        return root;
+    }
+    
+    createHumanSkeleton() {
+        const root = document.createElement('div');
+        root.className = 'skeleton-root';
+        const torso = document.createElement('div');
+        torso.className = 'joint-torso human';
+        torso.style.transformOrigin = '50% 30%';
+        root.appendChild(torso);
+        const neck = document.createElement('div');
+        neck.className = 'joint-neck';
+        neck.style.transformOrigin = '50% 100%';
+        neck.style.position = 'absolute';
+        neck.style.top = '-15px';
+        neck.style.left = '50%';
+        neck.style.transform = 'translateX(-50%)';
+        torso.appendChild(neck);
+        const head = document.createElement('div');
+        head.className = 'joint-head human';
+        head.style.transformOrigin = '50% 100%';
+        head.style.position = 'absolute';
+        head.style.top = '-45px';
+        head.style.left = '50%';
+        head.style.transform = 'translateX(-50%)';
+        neck.appendChild(head);
+        const upperlimbLeft = this.createHumanLimb('upperlimb', 'left');
+        upperlimbLeft.style.position = 'absolute';
+        upperlimbLeft.style.top = '10px';
+        upperlimbLeft.style.left = '-5px';
+        torso.appendChild(upperlimbLeft);
+        const upperlimbRight = this.createHumanLimb('upperlimb', 'right');
+        upperlimbRight.style.position = 'absolute';
+        upperlimbRight.style.top = '10px';
+        upperlimbRight.style.right = '-5px';
+        torso.appendChild(upperlimbRight);
+        const lowerlimbLeft = this.createHumanLimb('lowerlimb', 'left');
+        lowerlimbLeft.style.position = 'absolute';
+        lowerlimbLeft.style.bottom = '-2px';
+        lowerlimbLeft.style.left = '18px';
+        torso.appendChild(lowerlimbLeft);
+        const lowerlimbRight = this.createHumanLimb('lowerlimb', 'right');
+        lowerlimbRight.style.position = 'absolute';
+        lowerlimbRight.style.bottom = '-2px';
+        lowerlimbRight.style.right = '18px';
+        torso.appendChild(lowerlimbRight);
+        return root;
+    }
+    
+    createLimbPair(type, side) {
+        const container = document.createElement('div');
+        container.className = `limb-container ${type}_${side}`;
+        const upper = document.createElement('div');
+        upper.className = `joint-upper ${type}_${side}`;
+        upper.style.transformOrigin = '50% 0%';
+        container.appendChild(upper);
+        const lower = document.createElement('div');
+        lower.className = `joint-lower ${type}_${side}`;
+        lower.style.transformOrigin = '50% 0%';
+        lower.style.position = 'absolute';
+        lower.style.top = '100%';
+        lower.style.left = '0';
+        upper.appendChild(lower);
+        return container;
+    }
+    
+    createHumanLimb(type, side) {
+        const container = document.createElement('div');
+        container.className = `limb-container human ${type}_${side}`;
+        const upper = document.createElement('div');
+        upper.className = `joint-upper human ${type}_${side}`;
+        upper.style.transformOrigin = '50% 0%';
+        container.appendChild(upper);
+        const middle = document.createElement('div');
+        middle.className = `joint-middle human ${type}_${side}`;
+        middle.style.transformOrigin = '50% 0%';
+        middle.style.position = 'absolute';
+        middle.style.top = '100%';
+        middle.style.left = '0';
+        upper.appendChild(middle);
+        return container;
+    }
+    
+    createTail(segments = 3) {
+        const container = document.createElement('div');
+        container.className = 'tail-container';
+        let prevSegment = null;
+        for (let i = 0; i < segments; i++) {
+            const segment = document.createElement('div');
+            segment.className = `joint-tail segment_${i + 1}`;
+            if (i === 0) {
+                segment.style.transformOrigin = '0% 50%';
+                container.appendChild(segment);
+            } else {
+                segment.style.transformOrigin = '0% 50%';
+                segment.style.position = 'absolute';
+                segment.style.left = '-18px';
+                prevSegment.appendChild(segment);
+            }
+            prevSegment = segment;
+        }
+        return container;
+    }
+    
+    createEar(side) {
+        const ear = document.createElement('div');
+        ear.className = `joint-ear ${side}`;
+        ear.style.transformOrigin = '100% 100%';
+        ear.style.width = '15px';
+        ear.style.height = '25px';
+        ear.style.background = '#ffb6c1';
+        ear.style.borderRadius = '50% 50% 0 0';
+        return ear;
+    }
+    
+    createFace() {
+        const face = document.createElement('div');
+        face.className = 'face-container';
+        
+        // 眼睛
+        const eyeLeft = document.createElement('div');
+        eyeLeft.className = 'joint-eye left';
+        eyeLeft.style.width = '8px';
+        eyeLeft.style.height = '8px';
+        eyeLeft.style.background = '#000';
+        eyeLeft.style.borderRadius = '50%';
+        eyeLeft.style.position = 'absolute';
+        eyeLeft.style.left = '8px';
+        eyeLeft.style.top = '0';
+        face.appendChild(eyeLeft);
+        
+        const eyeRight = document.createElement('div');
+        eyeRight.className = 'joint-eye right';
+        eyeRight.style.width = '8px';
+        eyeRight.style.height = '8px';
+        eyeRight.style.background = '#000';
+        eyeRight.style.borderRadius = '50%';
+        eyeRight.style.position = 'absolute';
+        eyeRight.style.right = '8px';
+        eyeRight.style.top = '0';
+        face.appendChild(eyeRight);
+        
+        // 鼻子
+        const nose = document.createElement('div');
+        nose.className = 'joint-nose';
+        nose.style.width = '10px';
+        nose.style.height = '8px';
+        nose.style.background = '#000';
+        nose.style.borderRadius = '50%';
+        nose.style.position = 'absolute';
+        nose.style.left = '50%';
+        nose.style.top = '10px';
+        nose.style.transform = 'translateX(-50%)';
+        face.appendChild(nose);
+        
+        // 嘴巴
+        const mouth = document.createElement('div');
+        mouth.className = 'joint-mouth';
+        mouth.style.width = '15px';
+        mouth.style.height = '8px';
+        mouth.style.borderBottom = '2px solid #000';
+        mouth.style.borderRadius = '0 0 50% 50%';
+        mouth.style.position = 'absolute';
+        mouth.style.left = '50%';
+        mouth.style.top = '18px';
+        mouth.style.transform = 'translateX(-50%)';
+        face.appendChild(mouth);
+        
+        face.style.width = '40px';
+        face.style.height = '30px';
+        face.style.position = 'relative';
+        return face;
+    }
+    
+    createLimbPair(type, side) {
+        const container = document.createElement('div');
+        container.className = `limb-container ${type}_${side}`;
+        const upper = document.createElement('div');
+        upper.className = `joint-upper ${type}_${side}`;
+        upper.style.transformOrigin = '50% 0%';
+        container.appendChild(upper);
+        const lower = document.createElement('div');
+        lower.className = `joint-lower ${type}_${side}`;
+        lower.style.transformOrigin = '50% 0%';
+        lower.style.position = 'absolute';
+        lower.style.top = '100%';
+        lower.style.left = '0';
+        upper.appendChild(lower);
+        
+        // 添加爪子
+        const paw = this.createPaw(side);
+        paw.style.position = 'absolute';
+        paw.style.top = '100%';
+        paw.style.left = '50%';
+        paw.style.transform = 'translateX(-50%)';
+        lower.appendChild(paw);
+        
+        return container;
+    }
+    
+    createPaw(side) {
+        const paw = document.createElement('div');
+        paw.className = `joint-paw ${side}`;
+        paw.style.width = '20px';
+        paw.style.height = '15px';
+        paw.style.background = '#ffb6c1';
+        paw.style.borderRadius = '50%';
+        
+        // 脚趾
+        for (let i = 0; i < 4; i++) {
+            const toe = document.createElement('div');
+            toe.className = `joint-toe ${i + 1}`;
+            toe.style.width = '5px';
+            toe.style.height = '8px';
+            toe.style.background = '#ffb6c1';
+            toe.style.borderRadius = '50%';
+            toe.style.position = 'absolute';
+            toe.style.top = '-3px';
+            toe.style.left = `${5 + i * 3}px`;
+            paw.appendChild(toe);
+        }
+        
+        return paw;
+    }
+    
+    createHumanLimb(type, side) {
+        const container = document.createElement('div');
+        container.className = `limb-container human ${type}_${side}`;
+        const upper = document.createElement('div');
+        upper.className = `joint-upper human ${type}_${side}`;
+        upper.style.transformOrigin = '50% 0%';
+        container.appendChild(upper);
+        const middle = document.createElement('div');
+        middle.className = `joint-middle human ${type}_${side}`;
+        middle.style.transformOrigin = '50% 0%';
+        middle.style.position = 'absolute';
+        middle.style.top = '100%';
+        middle.style.left = '0';
+        upper.appendChild(middle);
+        
+        // 添加手/脚
+        if (type === 'upperlimb') {
+            const hand = this.createHand(side);
+            hand.style.position = 'absolute';
+            hand.style.top = '100%';
+            hand.style.left = '50%';
+            hand.style.transform = 'translateX(-50%)';
+            middle.appendChild(hand);
+        } else {
+            const foot = this.createFoot(side);
+            foot.style.position = 'absolute';
+            foot.style.top = '100%';
+            foot.style.left = '50%';
+            foot.style.transform = 'translateX(-50%)';
+            middle.appendChild(foot);
+        }
+        
+        return container;
+    }
+    
+    createHand(side) {
+        const hand = document.createElement('div');
+        hand.className = `joint-hand ${side}`;
+        hand.style.width = '15px';
+        hand.style.height = '15px';
+        hand.style.background = '#ffe0bd';
+        hand.style.borderRadius = '50%';
+        
+        // 手指
+        for (let i = 0; i < 5; i++) {
+            const finger = document.createElement('div');
+            finger.className = `joint-finger ${i + 1}`;
+            finger.style.width = '3px';
+            finger.style.height = '8px';
+            finger.style.background = '#ffe0bd';
+            finger.style.borderRadius = '50%';
+            finger.style.position = 'absolute';
+            finger.style.top = '-5px';
+            finger.style.left = `${2 + i * 2.4}px`;
+            hand.appendChild(finger);
+        }
+        
+        return hand;
+    }
+    
+    createFoot(side) {
+        const foot = document.createElement('div');
+        foot.className = `joint-foot ${side}`;
+        foot.style.width = '20px';
+        foot.style.height = '12px';
+        foot.style.background = '#4169e1';
+        foot.style.borderRadius = '50%';
+        
+        // 脚趾
+        for (let i = 0; i < 5; i++) {
+            const toe = document.createElement('div');
+            toe.className = `joint-toe ${i + 1}`;
+            toe.style.width = '4px';
+            toe.style.height = '6px';
+            toe.style.background = '#4169e1';
+            toe.style.borderRadius = '50%';
+            toe.style.position = 'absolute';
+            toe.style.top = '-2px';
+            toe.style.left = `${2 + i * 3.2}px`;
+            foot.appendChild(toe);
+        }
+        
+        return foot;
+    }
+    
+    // ========== 渲染宠物（骨骼版）==========
     renderPet(container = this.petCharacter) {
         container.innerHTML = '';
+        this.joints = {};
+        
+        // 创建物理容器
+        const physicsContainer = document.createElement('div');
+        physicsContainer.className = 'pet-physics';
+        
+        // 创建阴影
+        const shadow = document.createElement('div');
+        shadow.className = 'pet-shadow';
+        physicsContainer.appendChild(shadow);
+        
+        // 创建骨骼
+        let skeleton;
         if (this.currentConfig.type === 'human') {
-            container.className = 'pet-human';
-            const parts = ['head','torso','arm_left','arm_right','leg_left','leg_right'];
-            parts.forEach(part => {
-                const div = document.createElement('div');
-                div.className = `pet-part ${part}`;
-                const partConfig = this.currentConfig.parts[part];
-                if (partConfig && partConfig.image) {
-                    div.style.backgroundImage = `url(${partConfig.image})`;
-                }
-                // 应用transform
-                if (partConfig) {
-                    div.style.transform = `translate(${partConfig.x}px, ${partConfig.y}px) scale(${partConfig.scale}) rotate(${partConfig.rotate}deg)`;
-                }
-                container.appendChild(div);
-            });
+            skeleton = this.createHumanSkeleton();
+            this.cacheJointsHuman(skeleton);
+            this.applyHumanParts(skeleton);
         } else {
-            container.className = 'pet-body';
-            const head = document.createElement('div');
-            head.className = 'pet-head';
-            if (this.currentConfig.head && this.currentConfig.head.image) {
-                head.style.backgroundImage = `url(${this.currentConfig.head.image})`;
+            skeleton = this.createAnimalSkeleton();
+            this.cacheJointsAnimal(skeleton);
+            this.applyAnimalParts(skeleton);
+        }
+        
+        physicsContainer.appendChild(skeleton);
+        container.appendChild(physicsContainer);
+        
+        // 缓存物理元素
+        this.physics = {
+            container: physicsContainer,
+            shadow: shadow
+        };
+    }
+    
+    cacheJointsAnimal(skeleton) {
+        this.joints.root = skeleton;
+        this.joints.torso = skeleton.querySelector('.joint-torso');
+        this.joints.head = skeleton.querySelector('.joint-head');
+        // 耳朵
+        this.joints.ear_left = skeleton.querySelector('.joint-ear.left');
+        this.joints.ear_right = skeleton.querySelector('.joint-ear.right');
+        // 面部特征
+        this.joints.eye_left = skeleton.querySelector('.joint-eye.left');
+        this.joints.eye_right = skeleton.querySelector('.joint-eye.right');
+        this.joints.nose = skeleton.querySelector('.joint-nose');
+        this.joints.mouth = skeleton.querySelector('.joint-mouth');
+        // 前肢
+        this.joints.forelimb_left_upper = skeleton.querySelector('.forelimb_left .joint-upper');
+        this.joints.forelimb_left_lower = skeleton.querySelector('.forelimb_left .joint-lower');
+        this.joints.forelimb_left_paw = skeleton.querySelector('.forelimb_left .joint-paw');
+        this.joints.forelimb_right_upper = skeleton.querySelector('.forelimb_right .joint-upper');
+        this.joints.forelimb_right_lower = skeleton.querySelector('.forelimb_right .joint-lower');
+        this.joints.forelimb_right_paw = skeleton.querySelector('.forelimb_right .joint-paw');
+        // 后肢
+        this.joints.hindlimb_left_upper = skeleton.querySelector('.hindlimb_left .joint-upper');
+        this.joints.hindlimb_left_lower = skeleton.querySelector('.hindlimb_left .joint-lower');
+        this.joints.hindlimb_left_paw = skeleton.querySelector('.hindlimb_left .joint-paw');
+        this.joints.hindlimb_right_upper = skeleton.querySelector('.hindlimb_right .joint-upper');
+        this.joints.hindlimb_right_lower = skeleton.querySelector('.hindlimb_right .joint-lower');
+        this.joints.hindlimb_right_paw = skeleton.querySelector('.hindlimb_right .joint-paw');
+        // 尾巴
+        this.joints.tail_1 = skeleton.querySelector('.segment_1');
+        this.joints.tail_2 = skeleton.querySelector('.segment_2');
+        this.joints.tail_3 = skeleton.querySelector('.segment_3');
+    }
+    
+    cacheJointsHuman(skeleton) {
+        this.joints.root = skeleton;
+        this.joints.torso = skeleton.querySelector('.joint-torso');
+        this.joints.neck = skeleton.querySelector('.joint-neck');
+        this.joints.head = skeleton.querySelector('.joint-head');
+        // 上肢
+        this.joints.upperlimb_left_upper = skeleton.querySelector('.upperlimb_left .joint-upper');
+        this.joints.upperlimb_left_middle = skeleton.querySelector('.upperlimb_left .joint-middle');
+        this.joints.upperlimb_left_hand = skeleton.querySelector('.upperlimb_left .joint-hand');
+        this.joints.upperlimb_right_upper = skeleton.querySelector('.upperlimb_right .joint-upper');
+        this.joints.upperlimb_right_middle = skeleton.querySelector('.upperlimb_right .joint-middle');
+        this.joints.upperlimb_right_hand = skeleton.querySelector('.upperlimb_right .joint-hand');
+        // 下肢
+        this.joints.lowerlimb_left_upper = skeleton.querySelector('.lowerlimb_left .joint-upper');
+        this.joints.lowerlimb_left_middle = skeleton.querySelector('.lowerlimb_left .joint-middle');
+        this.joints.lowerlimb_left_foot = skeleton.querySelector('.lowerlimb_left .joint-foot');
+        this.joints.lowerlimb_right_upper = skeleton.querySelector('.lowerlimb_right .joint-upper');
+        this.joints.lowerlimb_right_middle = skeleton.querySelector('.lowerlimb_right .joint-middle');
+        this.joints.lowerlimb_right_foot = skeleton.querySelector('.lowerlimb_right .joint-foot');
+    }
+    
+    applyAnimalParts(skeleton) {
+        const head = this.currentConfig.head;
+        const headJoint = skeleton.querySelector('.joint-head');
+        if (head && head.image) {
+            headJoint.style.backgroundImage = `url(${head.image})`;
+        }
+        headJoint.style.backgroundSize = 'cover';
+        headJoint.style.backgroundPosition = 'center';
+        headJoint.style.backgroundRepeat = 'no-repeat';
+        const torsoJoint = skeleton.querySelector('.joint-torso');
+        torsoJoint.style.background = '#ffb6c1';
+        torsoJoint.style.borderRadius = '40% 40% 35% 35%';
+        const limbs = skeleton.querySelectorAll('.joint-upper, .joint-lower');
+        limbs.forEach(limb => {
+            limb.style.background = '#ffb6c1';
+            limb.style.borderRadius = '30%';
+        });
+    }
+    
+    applyHumanParts(skeleton) {
+        const parts = this.currentConfig.parts;
+        if (this.joints.head) {
+            const headPart = parts.head || {};
+            if (headPart.image) {
+                this.joints.head.style.backgroundImage = `url(${headPart.image})`;
+            } else {
+                this.joints.head.style.background = '#ffe0bd';
             }
-            head.style.transform = `translate(${this.currentConfig.head.x}px, ${this.currentConfig.head.y}px) scale(${this.currentConfig.head.scale}) rotate(${this.currentConfig.head.rotate}deg)`;
-            const torso = document.createElement('div');
-            torso.className = 'pet-torso';
-            container.appendChild(head);
-            container.appendChild(torso);
+            this.joints.head.style.backgroundSize = 'cover';
+            this.joints.head.style.backgroundPosition = 'center';
+            this.joints.head.style.borderRadius = '50%';
+        }
+        if (this.joints.torso) {
+            const torsoPart = parts.torso || {};
+            if (torsoPart.image) {
+                this.joints.torso.style.backgroundImage = `url(${torsoPart.image})`;
+            } else {
+                this.joints.torso.style.background = '#87ceeb';
+            }
+            this.joints.torso.style.backgroundSize = 'cover';
+            this.joints.torso.style.backgroundPosition = 'center';
+            this.joints.torso.style.borderRadius = '20%';
+        }
+        if (this.joints.upperlimb_left_upper) {
+            const armPart = parts.arm_left || {};
+            if (armPart.image) {
+                this.joints.upperlimb_left_upper.style.backgroundImage = `url(${armPart.image})`;
+            } else {
+                this.joints.upperlimb_left_upper.style.background = '#ffe0bd';
+            }
+            this.joints.upperlimb_left_upper.style.backgroundSize = 'cover';
+            this.joints.upperlimb_left_upper.style.borderRadius = '20%';
+        }
+        if (this.joints.upperlimb_right_upper) {
+            const armPart = parts.arm_right || {};
+            if (armPart.image) {
+                this.joints.upperlimb_right_upper.style.backgroundImage = `url(${armPart.image})`;
+            } else {
+                this.joints.upperlimb_right_upper.style.background = '#ffe0bd';
+            }
+            this.joints.upperlimb_right_upper.style.backgroundSize = 'cover';
+            this.joints.upperlimb_right_upper.style.borderRadius = '20%';
+        }
+        if (this.joints.lowerlimb_left_upper) {
+            const legPart = parts.leg_left || {};
+            if (legPart.image) {
+                this.joints.lowerlimb_left_upper.style.backgroundImage = `url(${legPart.image})`;
+            } else {
+                this.joints.lowerlimb_left_upper.style.background = '#4169e1';
+            }
+            this.joints.lowerlimb_left_upper.style.backgroundSize = 'cover';
+            this.joints.lowerlimb_left_upper.style.borderRadius = '20%';
+        }
+        if (this.joints.lowerlimb_right_upper) {
+            const legPart = parts.leg_right || {};
+            if (legPart.image) {
+                this.joints.lowerlimb_right_upper.style.backgroundImage = `url(${legPart.image})`;
+            } else {
+                this.joints.lowerlimb_right_upper.style.background = '#4169e1';
+            }
+            this.joints.lowerlimb_right_upper.style.backgroundSize = 'cover';
+            this.joints.lowerlimb_right_upper.style.borderRadius = '20%';
+        }
+    }
+    
+    renderPetTo(container, config) {
+        container.innerHTML = '';
+        if (config.type === 'human') {
+            const skeleton = this.createHumanSkeleton();
+            this.applyHumanPartsTo(skeleton, config);
+            container.appendChild(skeleton);
+        } else {
+            const skeleton = this.createAnimalSkeleton();
+            this.applyAnimalPartsTo(skeleton, config);
+            container.appendChild(skeleton);
+        }
+    }
+    
+    applyAnimalPartsTo(skeleton, config) {
+        const head = config.head;
+        const headJoint = skeleton.querySelector('.joint-head');
+        if (head && head.image) {
+            headJoint.style.backgroundImage = `url(${head.image})`;
+        }
+        headJoint.style.backgroundSize = 'cover';
+        headJoint.style.transform = `translateX(-50%) translate(${head.x}px, ${head.y}px) scale(${head.scale}) rotate(${head.rotate}deg)`;
+    }
+    
+    applyHumanPartsTo(skeleton, config) {
+        const parts = config.parts;
+        const jointMap = {
+            'head': skeleton.querySelector('.joint-head'),
+            'torso': skeleton.querySelector('.joint-torso'),
+            'arm_left': skeleton.querySelector('.upperlimb_left .joint-upper'),
+            'arm_right': skeleton.querySelector('.upperlimb_right .joint-upper'),
+            'leg_left': skeleton.querySelector('.lowerlimb_left .joint-upper'),
+            'leg_right': skeleton.querySelector('.lowerlimb_right .joint-upper')
+        };
+        for (const [partName, joint] of Object.entries(jointMap)) {
+            if (joint && parts[partName]) {
+                const part = parts[partName];
+                if (part.image) joint.style.backgroundImage = `url(${part.image})`;
+                joint.style.backgroundSize = 'cover';
+                joint.style.transform = `translate(${part.x}px, ${part.y}px) scale(${part.scale}) rotate(${part.rotate}deg)`;
+            }
+        }
+    }
+    
+    resetJoints() {
+        for (const joint of Object.values(this.joints)) {
+            if (joint) joint.style.transform = '';
+        }
+    }
+    
+    // ========== 动作系统 ==========
+    executeAction(action) {
+        this.actionQueue.push(action);
+        if (!this.isActionRunning) this.processQueue();
+    }
+    processQueue() {
+        if (this.actionQueue.length === 0) { this.isActionRunning = false; return; }
+        this.isActionRunning = true;
+        const action = this.actionQueue.shift();
+        this.playAction(action).then(() => this.processQueue());
+    }
+    playAction(action) {
+        return new Promise(resolve => {
+            const duration = 1500;
+            switch(action) {
+                case 'dance':
+                    this.showBubble('跳舞中~');
+                    this.animateDance(duration).then(resolve);
+                    break;
+                case 'circle':
+                    this.showBubble('转圈中~');
+                    this.animateCircle(duration).then(resolve);
+                    break;
+                case 'handshake':
+                    this.showBubble('握手~');
+                    this.animateHandshake().then(resolve);
+                    break;
+                case 'heart':
+                    this.showBubble('比心~');
+                    this.animateHeart(duration).then(resolve);
+                    break;
+                case 'sit':
+                    this.showBubble('坐下~');
+                    this.animateSit(duration).then(resolve);
+                    break;
+                case 'jump':
+                    this.showBubble('跳~');
+                    this.animateJump(duration).then(resolve);
+                    break;
+                case 'walk':
+                    this.showBubble('走路~');
+                    this.animateWalk(duration).then(resolve);
+                    break;
+                default:
+                    this.animateBounce(1000).then(resolve);
+            }
+        });
+    }
+    
+    async animateDance(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const offset = Math.sin(progress * Math.PI * 6) * 15;
+                const offset2 = Math.sin(progress * Math.PI * 4) * 10;
+                if (this.currentConfig.type === 'human') {
+                    if (this.joints.upperlimb_left_upper) this.joints.upperlimb_left_upper.style.transform = `rotate(${offset}deg)`;
+                    if (this.joints.upperlimb_right_upper) this.joints.upperlimb_right_upper.style.transform = `rotate(${-offset}deg)`;
+                    if (this.joints.upperlimb_left_middle) this.joints.upperlimb_left_middle.style.transform = `rotate(${offset2}deg)`;
+                    if (this.joints.upperlimb_right_middle) this.joints.upperlimb_right_middle.style.transform = `rotate(${-offset2}deg)`;
+                    if (this.joints.lowerlimb_left_upper) this.joints.lowerlimb_left_upper.style.transform = `rotate(${offset * 0.5}deg)`;
+                    if (this.joints.lowerlimb_right_upper) this.joints.lowerlimb_right_upper.style.transform = `rotate(${-offset * 0.5}deg)`;
+                    if (this.joints.torso) this.joints.torso.style.transform = `rotate(${offset * 0.3}deg)`;
+                    if (this.joints.neck) this.joints.neck.style.transform = `rotate(${offset * 0.2}deg)`;
+                    if (this.joints.head) this.joints.head.style.transform = `translateX(-50%) rotate(${offset * 0.1}deg)`;
+                } else {
+                    if (this.joints.head) this.joints.head.style.transform = `translateX(-50%) rotate(${offset}deg)`;
+                    if (this.joints.ear_left) this.joints.ear_left.style.transform = `rotate(${offset2}deg)`;
+                    if (this.joints.ear_right) this.joints.ear_right.style.transform = `rotate(${-offset2}deg)`;
+                    if (this.joints.torso) this.joints.torso.style.transform = `rotate(${offset * 0.5}deg)`;
+                    if (this.joints.forelimb_left_upper) this.joints.forelimb_left_upper.style.transform = `rotate(${offset}deg)`;
+                    if (this.joints.forelimb_right_upper) this.joints.forelimb_right_upper.style.transform = `rotate(${-offset}deg)`;
+                    if (this.joints.hindlimb_left_upper) this.joints.hindlimb_left_upper.style.transform = `rotate(${-offset * 0.5}deg)`;
+                    if (this.joints.hindlimb_right_upper) this.joints.hindlimb_right_upper.style.transform = `rotate(${offset * 0.5}deg)`;
+                    if (this.joints.tail_1) this.joints.tail_1.style.transform = `rotate(${-offset}deg)`;
+                    if (this.joints.tail_2) this.joints.tail_2.style.transform = `rotate(${offset * 1.5}deg)`;
+                    if (this.joints.tail_3) this.joints.tail_3.style.transform = `rotate(${offset * 2}deg)`;
+                }
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    async animateCircle(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const angle = progress * Math.PI * 4;
+                if (this.joints.root) this.joints.root.style.transform = `rotate(${Math.sin(angle) * 10}deg)`;
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    async animateHandshake() {
+        if (this.currentConfig.type === 'human') {
+            if (this.joints.upperlimb_right_upper) {
+                this.joints.upperlimb_right_upper.style.transition = 'transform 0.5s';
+                this.joints.upperlimb_right_upper.style.transform = 'rotate(-45deg)';
+                await new Promise(r => setTimeout(r, 800));
+                this.joints.upperlimb_right_upper.style.transform = 'rotate(0deg)';
+                await new Promise(r => setTimeout(r, 500));
+                this.joints.upperlimb_right_upper.style.transition = '';
+            }
+        } else {
+            if (this.joints.forelimb_right_upper) {
+                this.joints.forelimb_right_upper.style.transition = 'transform 0.5s';
+                this.joints.forelimb_right_upper.style.transform = 'rotate(-30deg)';
+                await new Promise(r => setTimeout(r, 800));
+                this.joints.forelimb_right_upper.style.transform = 'rotate(0deg)';
+                await new Promise(r => setTimeout(r, 500));
+                this.joints.forelimb_right_upper.style.transition = '';
+            }
+        }
+        resolve();
+    }
+    
+    async animateHeart(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const scale = 1 + Math.sin(progress * Math.PI * 3) * 0.2;
+                if (this.currentConfig.type === 'human') {
+                    if (this.joints.upperlimb_left_upper) this.joints.upperlimb_left_upper.style.transform = 'rotate(30deg)';
+                    if (this.joints.upperlimb_right_upper) this.joints.upperlimb_right_upper.style.transform = 'rotate(-30deg)';
+                    if (this.joints.torso) this.joints.torso.style.transform = `scale(${scale})`;
+                } else {
+                    if (this.joints.head) this.joints.head.style.transform = `translateX(-50%) scale(${scale})`;
+                }
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    async animateSit(duration) {
+        if (this.currentConfig.type === 'human') {
+            if (this.joints.lowerlimb_left_upper) {
+                this.joints.lowerlimb_left_upper.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.lowerlimb_left_upper.style.transform = 'rotate(90deg)';
+            }
+            if (this.joints.lowerlimb_right_upper) {
+                this.joints.lowerlimb_right_upper.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.lowerlimb_right_upper.style.transform = 'rotate(90deg)';
+            }
+            if (this.joints.lowerlimb_left_middle) {
+                this.joints.lowerlimb_left_middle.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.lowerlimb_left_middle.style.transform = 'rotate(-90deg)';
+            }
+            if (this.joints.lowerlimb_right_middle) {
+                this.joints.lowerlimb_right_middle.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.lowerlimb_right_middle.style.transform = 'rotate(-90deg)';
+            }
+        } else {
+            if (this.joints.hindlimb_left_upper) {
+                this.joints.hindlimb_left_upper.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.hindlimb_left_upper.style.transform = 'rotate(60deg)';
+            }
+            if (this.joints.hindlimb_right_upper) {
+                this.joints.hindlimb_right_upper.style.transition = `transform ${duration * 0.6}ms`;
+                this.joints.hindlimb_right_upper.style.transform = 'rotate(60deg)';
+            }
+        }
+        await new Promise(r => setTimeout(r, duration));
+        resolve();
+    }
+    
+    async animateJump(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const offset = Math.sin(progress * Math.PI) * 20;
+                const shadowScale = 1 - (offset / 40);
+                const shadowOpacity = 0.2 - (offset / 200);
+                
+                if (this.joints.root) {
+                    this.joints.root.style.transform = `translateY(${-offset}px)`;
+                }
+                if (this.physics?.shadow) {
+                    this.physics.shadow.style.transform = `translateX(-50%) scale(${shadowScale})`;
+                    this.physics.shadow.style.opacity = shadowOpacity;
+                }
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                if (this.physics?.shadow) {
+                    this.physics.shadow.style.transform = 'translateX(-50%) scale(1)';
+                    this.physics.shadow.style.opacity = '0.2';
+                }
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    async animateWalk(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const swing = Math.sin(progress * Math.PI * 4) * 20;
+                const swing2 = Math.sin(progress * Math.PI * 4 + Math.PI) * 15;
+                const offset = Math.sin(progress * Math.PI * 2) * 5;
+                if (this.currentConfig.type === 'human') {
+                    if (this.joints.lowerlimb_left_upper) this.joints.lowerlimb_left_upper.style.transform = `rotate(${swing}deg)`;
+                    if (this.joints.lowerlimb_right_upper) this.joints.lowerlimb_right_upper.style.transform = `rotate(${-swing}deg)`;
+                    if (this.joints.lowerlimb_left_middle) this.joints.lowerlimb_left_middle.style.transform = `rotate(${-swing2}deg)`;
+                    if (this.joints.lowerlimb_right_middle) this.joints.lowerlimb_right_middle.style.transform = `rotate(${swing2}deg)`;
+                    if (this.joints.upperlimb_left_upper) this.joints.upperlimb_left_upper.style.transform = `rotate(${-swing * 0.3}deg)`;
+                    if (this.joints.upperlimb_right_upper) this.joints.upperlimb_right_upper.style.transform = `rotate(${swing * 0.3}deg)`;
+                    if (this.joints.torso) this.joints.torso.style.transform = `rotate(${swing * 0.1}deg) translateY(${offset}px)`;
+                    if (this.joints.neck) this.joints.neck.style.transform = `rotate(${-swing * 0.05}deg)`;
+                } else {
+                    if (this.joints.hindlimb_left_upper) this.joints.hindlimb_left_upper.style.transform = `rotate(${swing}deg)`;
+                    if (this.joints.hindlimb_right_upper) this.joints.hindlimb_right_upper.style.transform = `rotate(${-swing}deg)`;
+                    if (this.joints.hindlimb_left_lower) this.joints.hindlimb_left_lower.style.transform = `rotate(${-swing2}deg)`;
+                    if (this.joints.hindlimb_right_lower) this.joints.hindlimb_right_lower.style.transform = `rotate(${swing2}deg)`;
+                    if (this.joints.forelimb_left_upper) this.joints.forelimb_left_upper.style.transform = `rotate(${-swing * 0.5}deg)`;
+                    if (this.joints.forelimb_right_upper) this.joints.forelimb_right_upper.style.transform = `rotate(${swing * 0.5}deg)`;
+                    if (this.joints.forelimb_left_lower) this.joints.forelimb_left_lower.style.transform = `rotate(${swing2 * 0.5}deg)`;
+                    if (this.joints.forelimb_right_lower) this.joints.forelimb_right_lower.style.transform = `rotate(${-swing2 * 0.5}deg)`;
+                    if (this.joints.tail_1) this.joints.tail_1.style.transform = `rotate(${-swing * 0.3}deg)`;
+                    if (this.joints.tail_2) this.joints.tail_2.style.transform = `rotate(${swing * 0.5}deg)`;
+                    if (this.joints.head) this.joints.head.style.transform = `translateX(-50%) rotate(${swing * 0.1}deg) translateY(${offset}px)`;
+                    if (this.joints.ear_left) this.joints.ear_left.style.transform = `rotate(${swing * 0.2}deg)`;
+                    if (this.joints.ear_right) this.joints.ear_right.style.transform = `rotate(${-swing * 0.2}deg)`;
+                }
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    async animateBounce(duration) {
+        const startTime = Date.now();
+        const animate = () => {
+            if (Date.now() - startTime < duration) {
+                const progress = (Date.now() - startTime) / duration;
+                const scale = 1 + Math.sin(progress * Math.PI * 2) * 0.15;
+                if (this.joints.root) this.joints.root.style.transform = `scale(${scale})`;
+                requestAnimationFrame(animate);
+            } else {
+                this.resetJoints();
+                resolve();
+            }
+        };
+        return new Promise(resolve => animate());
+    }
+    
+    handleCommand(text) {
+        const cmd = text.toLowerCase();
+        if (cmd.includes('跳舞')) this.executeAction('dance');
+        else if (cmd.includes('转圈')) this.executeAction('circle');
+        else if (cmd.includes('握手')) this.executeAction('handshake');
+        else if (cmd.includes('比心')) this.executeAction('heart');
+        else if (cmd.includes('坐下')) this.executeAction('sit');
+        else if (cmd.includes('跳')) this.executeAction('jump');
+        else if (cmd.includes('走') || cmd.includes('散步')) this.executeAction('walk');
+        else this.showBubble('试试说：跳舞、转圈、握手、比心、坐下、跳跃、走路');
+    }
+    
+    showBubble(msg) {
+        this.petBubble.textContent = msg;
+        this.petBubble.style.display = 'block';
+        clearTimeout(this._bubbleTimer);
+        this._bubbleTimer = setTimeout(() => { this.petBubble.style.display = 'none'; }, 3000);
+    }
+    
+    enableDrag() {
+        let dragging = false, startX, startY, initialLeft, initialTop;
+        const container = this.petCharacter.parentElement;
+        container?.addEventListener('mousedown', (e) => {
+            if (e.target.closest('#petWindow')) return;
+            dragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = container.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            const dx = e.clientX - startX, dy = e.clientY - startY;
+            container.style.left = `${initialLeft + dx}px`;
+            container.style.top = `${initialTop + dy}px`;
+        });
+        window.addEventListener('mouseup', () => { dragging = false; });
+    }
+    
+    initSpeech() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            this.recognizer = new SpeechRecognition();
+            this.recognizer.lang = 'zh-CN';
+            this.recognizer.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                this.handleCommand(text);
+            };
+        }
+    }
+    startVoice() {
+        if (this.recognizer) {
+            this.recognizer.start();
+            this.showBubble('正在听...');
+        }
+    }
+    
+    bindEvents() {
+        document.getElementById('petSendBtn')?.addEventListener('click', () => {
+            this.handleCommand(document.getElementById('petInput').value);
+            document.getElementById('petInput').value = '';
+        });
+        document.getElementById('petVoiceBtn')?.addEventListener('click', () => this.startVoice());
+        document.querySelectorAll('.petCommandBtn').forEach(btn => {
+            btn.addEventListener('click', () => this.executeAction(btn.dataset.command));
+        });
+        document.getElementById('customizePetBtn')?.addEventListener('click', () => this.openEditor());
+        document.getElementById('savePetBtn')?.addEventListener('click', () => this.savePet());
+        document.getElementById('cancelPetBtn')?.addEventListener('click', () => this.closeEditor());
+        document.querySelectorAll('.petTypeBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.editingConfig.type = btn.dataset.type;
+                this.updateEditorUI();
+            });
+        });
+        document.getElementById('closePetWindow')?.addEventListener('click', () => { this.petWindow.style.display = 'none'; });
+        this.petCharacter?.addEventListener('click', (e) => {
+            if (!e.target.closest('.skeleton-root')) {
+                this.petWindow.style.display = this.petWindow.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+        
+        // 为宠物部位添加点击事件
+        this.bindPartEvents();
+    }
+    
+    bindPartEvents() {
+        // 延迟绑定，确保骨骼已渲染
+        setTimeout(() => {
+            this.bindPartClick('.joint-head', () => this.onHeadClick());
+            this.bindPartClick('.joint-ear', (e) => this.onEarClick(e));
+            this.bindPartClick('.joint-eye', (e) => this.onEyeClick(e));
+            this.bindPartClick('.joint-nose', () => this.onNoseClick());
+            this.bindPartClick('.joint-mouth', () => this.onMouthClick());
+            this.bindPartClick('.joint-paw', (e) => this.onPawClick(e));
+            this.bindPartClick('.joint-hand', (e) => this.onHandClick(e));
+            this.bindPartClick('.joint-foot', (e) => this.onFootClick(e));
+            this.bindPartClick('.joint-tail', (e) => this.onTailClick(e));
+            this.bindPartClick('.joint-torso', () => this.onTorsoClick());
+        }, 100);
+    }
+    
+    bindPartClick(selector, callback) {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                callback(e);
+            });
+            // 添加悬停效果
+            element.style.cursor = 'pointer';
+            element.style.transition = 'transform 0.2s';
+            element.addEventListener('mouseenter', () => {
+                element.style.transform = 'scale(1.1)';
+            });
+            element.addEventListener('mouseleave', () => {
+                element.style.transform = '';
+            });
+        });
+    }
+    
+    onHeadClick() {
+        this.showBubble('摸头好舒服～');
+        this.animateHeadPet();
+    }
+    
+    onEarClick(e) {
+        const side = e.target.classList.contains('left') ? '左边' : '右边';
+        this.showBubble(`你碰了我的${side}耳朵！`);
+        this.animateEarWiggle(side);
+    }
+    
+    onEyeClick(e) {
+        const side = e.target.classList.contains('left') ? '左' : '右';
+        this.showBubble(`你戳了我的${side}眼睛！`);
+        this.animateEyeBlink();
+    }
+    
+    onNoseClick() {
+        this.showBubble('嗯？你闻什么呢？');
+        this.animateNoseTwitch();
+    }
+    
+    onMouthClick() {
+        this.showBubble('我现在不饿哦～');
+        this.animateMouthSmile();
+    }
+    
+    onPawClick(e) {
+        const side = e.target.classList.contains('left') ? '左' : '右';
+        this.showBubble(`你握了我的${side}爪子！`);
+        this.animatePawWave(side);
+    }
+    
+    onHandClick(e) {
+        const side = e.target.classList.contains('left') ? '左' : '右';
+        this.showBubble(`你握了我的${side}手！`);
+        this.animateHandWave(side);
+    }
+    
+    onFootClick(e) {
+        const side = e.target.classList.contains('left') ? '左' : '右';
+        this.showBubble(`你碰了我的${side}脚！`);
+        this.animateFootTap(side);
+    }
+    
+    onTailClick(e) {
+        this.showBubble('尾巴是我的敏感部位！');
+        this.animateTailWag();
+    }
+    
+    onTorsoClick() {
+        this.showBubble('肚子好痒～');
+        this.animateTorsoScratch();
+    }
+    
+    // 部位动画
+    async animateHeadPet() {
+        if (this.joints.head) {
+            this.joints.head.style.transition = 'transform 0.3s';
+            this.joints.head.style.transform = 'translateX(-50%) scale(1.1)';
+            await new Promise(r => setTimeout(r, 300));
+            this.joints.head.style.transform = 'translateX(-50%) scale(1)';
+            await new Promise(r => setTimeout(r, 200));
+            this.joints.head.style.transition = '';
+        }
+    }
+    
+    async animateEarWiggle(side) {
+        const ear = side === '左边' ? this.joints.ear_left : this.joints.ear_right;
+        if (ear) {
+            ear.style.transition = 'transform 0.2s';
+            for (let i = 0; i < 3; i++) {
+                ear.style.transform = 'rotate(10deg)';
+                await new Promise(r => setTimeout(r, 100));
+                ear.style.transform = 'rotate(-10deg)';
+                await new Promise(r => setTimeout(r, 100));
+            }
+            ear.style.transform = '';
+            ear.style.transition = '';
+        }
+    }
+    
+    async animateEyeBlink() {
+        const eyes = [this.joints.eye_left, this.joints.eye_right];
+        eyes.forEach(eye => {
+            if (eye) {
+                eye.style.transition = 'transform 0.1s';
+                eye.style.transform = 'scaleY(0.1)';
+            }
+        });
+        await new Promise(r => setTimeout(r, 100));
+        eyes.forEach(eye => {
+            if (eye) {
+                eye.style.transform = '';
+                eye.style.transition = '';
+            }
+        });
+    }
+    
+    async animateNoseTwitch() {
+        if (this.joints.nose) {
+            this.joints.nose.style.transition = 'transform 0.1s';
+            for (let i = 0; i < 3; i++) {
+                this.joints.nose.style.transform = 'translateX(-50%) scale(1.1)';
+                await new Promise(r => setTimeout(r, 80));
+                this.joints.nose.style.transform = 'translateX(-50%) scale(1)';
+                await new Promise(r => setTimeout(r, 80));
+            }
+            this.joints.nose.style.transition = '';
+        }
+    }
+    
+    async animateMouthSmile() {
+        if (this.joints.mouth) {
+            this.joints.mouth.style.transition = 'transform 0.3s';
+            this.joints.mouth.style.transform = 'translateX(-50%) scale(1.2)';
+            await new Promise(r => setTimeout(r, 300));
+            this.joints.mouth.style.transform = 'translateX(-50%) scale(1)';
+            this.joints.mouth.style.transition = '';
+        }
+    }
+    
+    async animatePawWave(side) {
+        const limb = side === '左' ? this.joints.forelimb_left_upper : this.joints.forelimb_right_upper;
+        if (limb) {
+            limb.style.transition = 'transform 0.5s';
+            limb.style.transform = 'rotate(-30deg)';
+            await new Promise(r => setTimeout(r, 500));
+            limb.style.transform = 'rotate(0deg)';
+            limb.style.transition = '';
+        }
+    }
+    
+    async animateHandWave(side) {
+        const limb = side === '左' ? this.joints.upperlimb_left_upper : this.joints.upperlimb_right_upper;
+        if (limb) {
+            limb.style.transition = 'transform 0.5s';
+            limb.style.transform = 'rotate(-45deg)';
+            await new Promise(r => setTimeout(r, 500));
+            limb.style.transform = 'rotate(0deg)';
+            limb.style.transition = '';
+        }
+    }
+    
+    async animateFootTap(side) {
+        const limb = side === '左' ? this.joints.lowerlimb_left_upper : this.joints.lowerlimb_right_upper;
+        if (limb) {
+            limb.style.transition = 'transform 0.2s';
+            for (let i = 0; i < 3; i++) {
+                limb.style.transform = 'rotate(10deg)';
+                await new Promise(r => setTimeout(r, 100));
+                limb.style.transform = 'rotate(0deg)';
+                await new Promise(r => setTimeout(r, 100));
+            }
+            limb.style.transition = '';
+        }
+    }
+    
+    async animateTailWag() {
+        const tail = this.joints.tail_1;
+        if (tail) {
+            tail.style.transition = 'transform 0.2s';
+            for (let i = 0; i < 5; i++) {
+                tail.style.transform = 'rotate(20deg)';
+                await new Promise(r => setTimeout(r, 100));
+                tail.style.transform = 'rotate(-20deg)';
+                await new Promise(r => setTimeout(r, 100));
+            }
+            tail.style.transform = '';
+            tail.style.transition = '';
+        }
+    }
+    
+    async animateTorsoScratch() {
+        if (this.joints.torso) {
+            this.joints.torso.style.transition = 'transform 0.3s';
+            this.joints.torso.style.transform = 'rotate(10deg)';
+            await new Promise(r => setTimeout(r, 200));
+            this.joints.torso.style.transform = 'rotate(-10deg)';
+            await new Promise(r => setTimeout(r, 200));
+            this.joints.torso.style.transform = 'rotate(10deg)';
+            await new Promise(r => setTimeout(r, 200));
+            this.joints.torso.style.transform = '';
+            this.joints.torso.style.transition = '';
         }
     }
     
@@ -381,45 +1545,47 @@ class PetModule {
             });
         } else {
             const partSelect = document.getElementById('partSelect');
-            function updateSliders() {
+            const updatePartUI = () => {
                 const part = partSelect.value;
                 const config = this.editingConfig.parts[part];
-                document.getElementById('partScale').value = config.scale;
-                document.getElementById('partRotate').value = config.rotate;
-                document.getElementById('partX').value = config.x;
-                document.getElementById('partY').value = config.y;
-                document.getElementById('partScaleVal').textContent = config.scale;
-                document.getElementById('partRotateVal').textContent = config.rotate;
-                document.getElementById('partXVal').textContent = config.x;
-                document.getElementById('partYVal').textContent = config.y;
-            }
-            partSelect.addEventListener('change', updateSliders);
-            updateSliders();
-            document.getElementById('partScale').addEventListener('input', (e) => {
+                if (config) {
+                    document.getElementById('partScale').value = config.scale;
+                    document.getElementById('partScaleVal').textContent = config.scale;
+                    document.getElementById('partRotate').value = config.rotate;
+                    document.getElementById('partRotateVal').textContent = config.rotate;
+                    document.getElementById('partX').value = config.x;
+                    document.getElementById('partXVal').textContent = config.x;
+                    document.getElementById('partY').value = config.y;
+                    document.getElementById('partYVal').textContent = config.y;
+                }
+            };
+            updatePartUI();
+            partSelect?.addEventListener('change', updatePartUI);
+            document.getElementById('partScale')?.addEventListener('input', (e) => {
                 const part = partSelect.value;
                 this.editingConfig.parts[part].scale = parseFloat(e.target.value);
                 document.getElementById('partScaleVal').textContent = e.target.value;
                 this.updateEditorUI();
             });
-            document.getElementById('partRotate').addEventListener('input', (e) => {
+            document.getElementById('partRotate')?.addEventListener('input', (e) => {
                 const part = partSelect.value;
                 this.editingConfig.parts[part].rotate = parseFloat(e.target.value);
                 document.getElementById('partRotateVal').textContent = e.target.value;
                 this.updateEditorUI();
             });
-            document.getElementById('partX').addEventListener('input', (e) => {
+            document.getElementById('partX')?.addEventListener('input', (e) => {
                 const part = partSelect.value;
                 this.editingConfig.parts[part].x = parseInt(e.target.value);
                 document.getElementById('partXVal').textContent = e.target.value;
                 this.updateEditorUI();
             });
-            document.getElementById('partY').addEventListener('input', (e) => {
+            document.getElementById('partY')?.addEventListener('input', (e) => {
                 const part = partSelect.value;
                 this.editingConfig.parts[part].y = parseInt(e.target.value);
                 document.getElementById('partYVal').textContent = e.target.value;
                 this.updateEditorUI();
             });
-            document.getElementById('partUpload').addEventListener('change', (e) => {
+            document.getElementById('partUpload')?.addEventListener('change', (e) => {
                 const part = partSelect.value;
                 const file = e.target.files[0];
                 if (file) {
@@ -431,13 +1597,12 @@ class PetModule {
                     reader.readAsDataURL(file);
                 }
             });
-            document.getElementById('mirrorBtn').addEventListener('click', () => {
+            document.getElementById('mirrorBtn')?.addEventListener('click', () => {
                 const part = partSelect.value;
                 const mirrorMap = { arm_left: 'arm_right', arm_right: 'arm_left', leg_left: 'leg_right', leg_right: 'leg_left' };
                 const mirrorPart = mirrorMap[part];
                 if (mirrorPart) {
                     this.editingConfig.parts[mirrorPart] = JSON.parse(JSON.stringify(this.editingConfig.parts[part]));
-                    // 水平翻转镜像
                     this.editingConfig.parts[mirrorPart].x = -this.editingConfig.parts[part].x;
                     this.updateEditorUI();
                 }
@@ -553,31 +1718,6 @@ class PetModule {
             this.showBubble('正在听...');
         }
     }
-    
-    // 事件绑定
-    bindEvents() {
-        document.getElementById('petSendBtn').addEventListener('click', () => {
-            this.handleCommand(document.getElementById('petInput').value);
-            document.getElementById('petInput').value = '';
-        });
-        document.getElementById('petVoiceBtn').addEventListener('click', () => this.startVoice());
-        document.querySelectorAll('.petCommandBtn').forEach(btn => {
-            btn.addEventListener('click', () => this.executeAction(btn.dataset.command));
-        });
-        document.getElementById('customizePetBtn').addEventListener('click', () => this.openEditor());
-        document.getElementById('savePetBtn').addEventListener('click', () => this.savePet());
-        document.getElementById('cancelPetBtn').addEventListener('click', () => this.closeEditor());
-        document.querySelectorAll('.petTypeBtn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.editingConfig.type = btn.dataset.type;
-                this.updateEditorUI();
-            });
-        });
-        document.getElementById('closePetWindow').addEventListener('click', () => { this.petWindow.style.display = 'none'; });
-        this.petCharacter.addEventListener('click', () => {
-            this.petWindow.style.display = this.petWindow.style.display === 'none' ? 'block' : 'none';
-        });
-    }
 }
 
 // 初始化宠物
@@ -598,6 +1738,164 @@ style.textContent = `
     @keyframes bounce { from { transform: scale(1); } to { transform: scale(1.2); } }
     @keyframes shake { 0% { transform: rotate(0); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } }
     @keyframes heart { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+    
+    /* ========== 骨骼系统样式 ========== */
+    .skeleton-root {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        transition: transform 0.3s ease;
+    }
+    .joint-torso {
+        width: 60px;
+        height: 50px;
+        position: absolute;
+        top: 15px;
+        left: 10px;
+        background: #ffb6c1;
+        border-radius: 40% 40% 35% 35%;
+        box-shadow: inset 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .joint-torso.human {
+        width: 50px;
+        height: 55px;
+        left: 15px;
+        top: 15px;
+        background: #87ceeb;
+        border-radius: 20%;
+        box-shadow: inset 0 -2px 4px rgba(0,0,0,0.1);
+    }
+    .joint-head {
+        width: 50px;
+        height: 50px;
+        background: #ffb6c1;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .joint-head.human {
+        width: 45px;
+        height: 45px;
+        background: #ffe0bd;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .joint-neck {
+        width: 20px;
+        height: 15px;
+        background: #ffe0bd;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .limb-container {
+        width: 20px;
+        height: 50px;
+    }
+    .limb-container.human {
+        width: 18px;
+        height: 40px;
+    }
+    .joint-upper {
+        width: 18px;
+        height: 28px;
+        background: #ffb6c1;
+        border-radius: 30%;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .joint-upper.human {
+        background: #ffe0bd;
+        width: 16px;
+        height: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .joint-lower {
+        width: 14px;
+        height: 22px;
+        background: #ffb6c1;
+        border-radius: 30%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .joint-middle {
+        width: 14px;
+        height: 22px;
+        background: #ffe0bd;
+        border-radius: 30%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .tail-container {
+        width: 20px;
+        height: 50px;
+    }
+    .joint-tail {
+        width: 18px;
+        height: 18px;
+        background: #ffb6c1;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .joint-tail.segment_2, .joint-tail.segment_3 {
+        width: 14px;
+        height: 14px;
+        margin-top: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    /* 新增部位样式 */
+    .joint-ear {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    .face-container {
+        position: relative;
+        z-index: 1;
+    }
+    .joint-eye {
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+        transition: transform 0.1s ease;
+    }
+    .joint-nose {
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        transition: transform 0.1s ease;
+    }
+    .joint-mouth {
+        transition: transform 0.3s ease;
+    }
+    .joint-paw {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease;
+    }
+    .joint-toe {
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    .joint-hand {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease;
+    }
+    .joint-finger {
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    .joint-foot {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        transition: transform 0.2s ease;
+    }
+    
+    /* 物理效果 */
+    .pet-physics {
+        position: relative;
+        overflow: hidden;
+    }
+    .pet-shadow {
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 8px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 50%;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        z-index: -1;
+    }
 `;
 document.head.appendChild(style);
 </script>
