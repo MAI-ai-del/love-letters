@@ -1782,6 +1782,17 @@
                     return;
                 }
 
+                // 检查Supabase库是否加载成功
+                if (!window.supabase || !window.supabase.createClient) {
+                    this.elements.cardContainer.innerHTML = `
+                        <div class="no-data">
+                            🔌 Supabase 库加载失败<br>
+                            请检查网络连接或刷新页面重试
+                        </div>
+                    `;
+                    return;
+                }
+
                 this.supabase = window.supabase.createClient(
                     this.config.supabaseUrl,
                     this.config.supabaseAnonKey
@@ -3191,9 +3202,35 @@
             </div>
         </div>
         
-        <!-- 宠物角色 -->
-        <div id="petCharacter" style="width: 80px; height: 80px; background: #ffb6c1; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-            🐱
+        <!-- 宠物角色 - 骨骼动画模型 -->
+        <div id="petCharacter" style="width: 80px; height: 80px; cursor: pointer; position: relative; transition: transform 0.3s ease;">
+            <!-- 身体 -->
+            <div id="petBody" style="position: absolute; width: 40px; height: 35px; background: #ffb6c1; border-radius: 40% 40% 45% 45%; left: 50%; top: 45%; transform: translateX(-50%); z-index: 2;"></div>
+            <!-- 头部 -->
+            <div id="petHead" style="position: absolute; width: 45px; height: 40px; background: #ffb6c1; border-radius: 50% 50% 45% 45%; left: 50%; top: 0; transform: translateX(-50%); z-index: 3;">
+                <!-- 耳朵 -->
+                <div id="petLeftEar" style="position: absolute; width: 12px; height: 16px; background: #ffb6c1; border-radius: 50% 50% 0 0; left: 3px; top: -8px; transform: rotate(-15deg); transform-origin: bottom center;"></div>
+                <div id="petRightEar" style="position: absolute; width: 12px; height: 16px; background: #ffb6c1; border-radius: 50% 50% 0 0; right: 3px; top: -8px; transform: rotate(15deg); transform-origin: bottom center;"></div>
+                <!-- 眼睛 -->
+                <div id="petLeftEye" style="position: absolute; width: 8px; height: 10px; background: #333; border-radius: 50%; left: 10px; top: 12px;"></div>
+                <div id="petRightEye" style="position: absolute; width: 8px; height: 10px; background: #333; border-radius: 50%; right: 10px; top: 12px;"></div>
+                <!-- 鼻子 -->
+                <div id="petNose" style="position: absolute; width: 6px; height: 4px; background: #ff6b8a; border-radius: 50%; left: 50%; top: 22px; transform: translateX(-50%);"></div>
+                <!-- 嘴巴 -->
+                <div id="petMouth" style="position: absolute; width: 12px; height: 6px; border-bottom: 2px solid #333; border-radius: 0 0 50% 50%; left: 50%; top: 26px; transform: translateX(-50%);"></div>
+            </div>
+            <!-- 左臂 -->
+            <div id="petLeftArm" style="position: absolute; width: 14px; height: 25px; background: #ffb6c1; border-radius: 40% 40% 50% 50%; left: 5px; top: 40%; transform-origin: top center; z-index: 1;"></div>
+            <!-- 右臂 -->
+            <div id="petRightArm" style="position: absolute; width: 14px; height: 25px; background: #ffb6c1; border-radius: 40% 40% 50% 50%; right: 5px; top: 40%; transform-origin: top center; z-index: 1;"></div>
+            <!-- 左腿 -->
+            <div id="petLeftLeg" style="position: absolute; width: 16px; height: 20px; background: #ffb6c1; border-radius: 40% 40% 50% 50%; left: 15px; bottom: 0; transform-origin: top center; z-index: 1;"></div>
+            <!-- 右腿 -->
+            <div id="petRightLeg" style="position: absolute; width: 16px; height: 20px; background: #ffb6c1; border-radius: 40% 40% 50% 50%; right: 15px; bottom: 0; transform-origin: top center; z-index: 1;"></div>
+            <!-- 尾巴 -->
+            <div id="petTail" style="position: absolute; width: 10px; height: 25px; background: #ffb6c1; border-radius: 50% 50% 50% 50%; right: -5px; top: 50%; transform-origin: top center; z-index: 0;"></div>
+            <!-- Emoji覆盖层（可选） -->
+            <div id="petEmoji" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 30px; z-index: 10; pointer-events: none;"></div>
         </div>
         
         <!-- 宠物气泡 -->
@@ -3218,8 +3255,18 @@
                     <button class="petTypeBtn" data-type="cat" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">🐱 猫</button>
                     <button class="petTypeBtn" data-type="human" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">👤 人形</button>
                 </div>
+                <h3 style="color: var(--text-color); margin-top: 20px; margin-bottom: 15px;">动作测试</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="animTestBtn" data-action="idle" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">空闲</button>
+                    <button class="animTestBtn" data-action="walk" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">行走</button>
+                    <button class="animTestBtn" data-action="run" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">奔跑</button>
+                    <button class="animTestBtn" data-action="jump" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">跳跃</button>
+                    <button class="animTestBtn" data-action="dance" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">跳舞</button>
+                    <button class="animTestBtn" data-action="wave" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">挥手</button>
+                    <button class="animTestBtn" data-action="attack" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">攻击</button>
+                </div>
             </div>
-            
+
             <!-- 预览区 -->
             <div style="flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center;">
                 <div id="petPreview" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
@@ -3228,12 +3275,59 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- 编辑面板 -->
-            <div style="width: 300px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
-                <h3 style="color: var(--text-color); margin-top: 0; margin-bottom: 15px;">编辑面板</h3>
-                <div id="editPanelContent">
-                    <p style="color: var(--text-color); text-align: center;">请选择宠物类型</p>
+            <div style="width: 320px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; max-height: 500px; overflow-y: auto;">
+                <h3 style="color: var(--text-color); margin-top: 0; margin-bottom: 15px;">动画参数调整</h3>
+                <div id="animParamsPanel" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>头部摆动幅度</span>
+                            <span id="headAmpVal">15°</span>
+                        </label>
+                        <input type="range" id="headAmp" min="0" max="30" value="15" style="width: 100%; margin-top: 5px;">
+                    </div>
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>手臂摆动幅度</span>
+                            <span id="armAmpVal">25°</span>
+                        </label>
+                        <input type="range" id="armAmp" min="0" max="45" value="25" style="width: 100%; margin-top: 5px;">
+                    </div>
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>腿部摆动幅度</span>
+                            <span id="legAmpVal">25°</span>
+                        </label>
+                        <input type="range" id="legAmp" min="0" max="45" value="25" style="width: 100%; margin-top: 5px;">
+                    </div>
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>尾巴摆动幅度</span>
+                            <span id="tailAmpVal">20°</span>
+                        </label>
+                        <input type="range" id="tailAmp" min="0" max="40" value="20" style="width: 100%; margin-top: 5px;">
+                    </div>
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>动画速度</span>
+                            <span id="animSpeedVal">1.0x</span>
+                        </label>
+                        <input type="range" id="animSpeed" min="50" max="200" value="100" style="width: 100%; margin-top: 5px;">
+                    </div>
+                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
+                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
+                            <span>过渡时长</span>
+                            <span id="transDurVal">200ms</span>
+                        </label>
+                        <input type="range" id="transDur" min="50" max="500" value="200" style="width: 100%; margin-top: 5px;">
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-color); margin: 0 0 10px 0; font-size: 14px;">当前状态</h4>
+                    <div id="currentStateDisplay" style="color: var(--text-color); font-size: 12px; background: var(--input-bg); padding: 8px; border-radius: 8px;">
+                        空闲中
+                    </div>
                 </div>
             </div>
         </div>
@@ -3241,6 +3335,408 @@
 
     <!-- 宠物模块脚本 -->
     <script>
+        /**
+         * 状态机类 - 管理动画状态转换
+         */
+        class StateMachine {
+            constructor(context, states, initialState) {
+                this.context = context;
+                this.states = states;
+                this.currentState = null;
+                this.previousState = null;
+                this.transitionDuration = 200;
+                if (initialState && states[initialState]) {
+                    this.setState(initialState, true);
+                }
+            }
+
+            setState(newState, immediate = false) {
+                if (!this.states[newState] || this.currentState === newState) return;
+                if (this.currentState && this.states[this.currentState].exit) {
+                    this.states[this.currentState].exit();
+                }
+                this.previousState = this.currentState;
+                this.currentState = newState;
+                if (this.states[newState].enter) {
+                    if (immediate) {
+                        this.states[newState].enter();
+                    } else {
+                        this.context.skeleton.blendTo(newState, this.transitionDuration);
+                    }
+                }
+            }
+
+            getState() {
+                return this.currentState;
+            }
+
+            getPreviousState() {
+                return this.previousState;
+            }
+        }
+
+        /**
+         * 骨骼动画类 - 独立控制各身体部位
+         */
+        class SkeletonAnimation {
+            constructor(elements) {
+                this.elements = elements;
+                this.isRunning = false;
+                this.currentAnimation = null;
+                this.animationFrame = null;
+                this.lastTime = 0;
+                this.animationProgress = 0;
+                this.blendProgress = 1;
+                this.blendFrom = null;
+                this.blendDuration = 200;
+                this.animationSpeed = 1.0;
+                this.animationAmplitude = {
+                    head: 15,
+                    arm: 25,
+                    leg: 25,
+                    tail: 20
+                };
+
+                this.animations = {
+                    idle: this.createIdleAnimation(),
+                    walk: this.createWalkAnimation(),
+                    run: this.createRunAnimation(),
+                    jump: this.createJumpAnimation(),
+                    dance: this.createDanceAnimation(),
+                    wave: this.createWaveAnimation(),
+                    sit: this.createSitAnimation(),
+                    sleep: this.createSleepAnimation(),
+                    greet: this.createGreetAnimation(),
+                    attack: this.createAttackAnimation()
+                };
+
+                this.boneTransforms = {
+                    head: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    body: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    leftArm: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    rightArm: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    leftLeg: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    rightLeg: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    tail: { rotation: 0, offsetX: 0, offsetY: 0 },
+                    leftEar: { rotation: 0 },
+                    rightEar: { rotation: 0 }
+                };
+            }
+
+            createIdleAnimation() {
+                return {
+                    duration: 2000,
+                    keyframes: [
+                        { time: 0, bones: { head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 }, tail: { rotation: 0 }, leftEar: { rotation: 0 }, rightEar: { rotation: 0 } } },
+                        { time: 1000, bones: { head: { rotation: -3, offsetY: -1 }, body: { rotation: 0 }, tail: { rotation: 5 }, leftEar: { rotation: -2 }, rightEar: { rotation: 2 } } },
+                        { time: 2000, bones: { head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 }, tail: { rotation: 0 }, leftEar: { rotation: 0 }, rightEar: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createWalkAnimation() {
+                return {
+                    duration: 600,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: -20 }, rightLeg: { rotation: 20 }, leftArm: { rotation: 15 }, rightArm: { rotation: -15 }, head: { rotation: -2, offsetY: 0 }, tail: { rotation: 10 } } },
+                        { time: 150, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -2 }, tail: { rotation: 0 } } },
+                        { time: 300, bones: { leftLeg: { rotation: 20 }, rightLeg: { rotation: -20 }, leftArm: { rotation: -15 }, rightArm: { rotation: 15 }, head: { rotation: 2, offsetY: 0 }, tail: { rotation: -10 } } },
+                        { time: 450, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -2 }, tail: { rotation: 0 } } },
+                        { time: 600, bones: { leftLeg: { rotation: -20 }, rightLeg: { rotation: 20 }, leftArm: { rotation: 15 }, rightArm: { rotation: -15 }, head: { rotation: -2, offsetY: 0 }, tail: { rotation: 10 } } }
+                    ]
+                };
+            }
+
+            createRunAnimation() {
+                return {
+                    duration: 400,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: -35 }, rightLeg: { rotation: 35 }, leftArm: { rotation: 25 }, rightArm: { rotation: -25 }, head: { rotation: -5, offsetY: -3 }, body: { rotation: -3 } } },
+                        { time: 100, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -6 }, body: { rotation: 0 } } },
+                        { time: 200, bones: { leftLeg: { rotation: 35 }, rightLeg: { rotation: -35 }, leftArm: { rotation: -25 }, rightArm: { rotation: 25 }, head: { rotation: 5, offsetY: -3 }, body: { rotation: 3 } } },
+                        { time: 300, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -6 }, body: { rotation: 0 } } },
+                        { time: 400, bones: { leftLeg: { rotation: -35 }, rightLeg: { rotation: 35 }, leftArm: { rotation: 25 }, rightArm: { rotation: -25 }, head: { rotation: -5, offsetY: -3 }, body: { rotation: -3 } } }
+                    ]
+                };
+            }
+
+            createJumpAnimation() {
+                return {
+                    duration: 800,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: -15 }, rightLeg: { rotation: -15 }, leftArm: { rotation: -30 }, rightArm: { rotation: -30 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 } } },
+                        { time: 200, bones: { leftLeg: { rotation: 45 }, rightLeg: { rotation: 45 }, leftArm: { rotation: -60 }, rightArm: { rotation: -60 }, head: { rotation: 0, offsetY: -15 }, body: { rotation: 0 } } },
+                        { time: 400, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -20 }, body: { rotation: 0 } } },
+                        { time: 600, bones: { leftLeg: { rotation: -15 }, rightLeg: { rotation: -15 }, leftArm: { rotation: -30 }, rightArm: { rotation: -30 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 } } },
+                        { time: 800, bones: { leftLeg: { rotation: -15 }, rightLeg: { rotation: -15 }, leftArm: { rotation: -30 }, rightArm: { rotation: -30 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createDanceAnimation() {
+                return {
+                    duration: 1200,
+                    keyframes: [
+                        { time: 0, bones: { leftArm: { rotation: -45 }, rightArm: { rotation: 45 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: -10 } } },
+                        { time: 300, bones: { leftArm: { rotation: 45 }, rightArm: { rotation: -45 }, head: { rotation: 15, offsetY: -3 }, body: { rotation: 10 } } },
+                        { time: 600, bones: { leftArm: { rotation: -90 }, rightArm: { rotation: -90 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: -15 } } },
+                        { time: 900, bones: { leftArm: { rotation: 45 }, rightArm: { rotation: 45 }, head: { rotation: -15, offsetY: -3 }, body: { rotation: 15 } } },
+                        { time: 1200, bones: { leftArm: { rotation: -45 }, rightArm: { rotation: 45 }, head: { rotation: 0, offsetY: 0 }, body: { rotation: -10 } } }
+                    ]
+                };
+            }
+
+            createWaveAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { rightArm: { rotation: 0 } } },
+                        { time: 250, bones: { rightArm: { rotation: -20 } } },
+                        { time: 500, bones: { rightArm: { rotation: -90 } } },
+                        { time: 750, bones: { rightArm: { rotation: -90 } } },
+                        { time: 1000, bones: { rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createSitAnimation() {
+                return {
+                    duration: 500,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, body: { rotation: 0, offsetY: 0 } } },
+                        { time: 250, bones: { leftLeg: { rotation: 60 }, rightLeg: { rotation: 60 }, body: { rotation: 0, offsetY: 5 } } },
+                        { time: 500, bones: { leftLeg: { rotation: 60 }, rightLeg: { rotation: 60 }, body: { rotation: 0, offsetY: 5 } } }
+                    ]
+                };
+            }
+
+            createSleepAnimation() {
+                return {
+                    duration: 3000,
+                    keyframes: [
+                        { time: 0, bones: { head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 }, leftEar: { rotation: 0 }, rightEar: { rotation: 0 } } },
+                        { time: 1500, bones: { head: { rotation: 10, offsetY: 3 }, body: { rotation: 5 }, leftEar: { rotation: -30 }, rightEar: { rotation: -30 } } },
+                        { time: 3000, bones: { head: { rotation: 0, offsetY: 0 }, body: { rotation: 0 }, leftEar: { rotation: 0 }, rightEar: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createGreetAnimation() {
+                return {
+                    duration: 1500,
+                    keyframes: [
+                        { time: 0, bones: { head: { rotation: 0, offsetY: 0 }, rightArm: { rotation: 0 } } },
+                        { time: 300, bones: { head: { rotation: -10, offsetY: 0 }, rightArm: { rotation: -30 } } },
+                        { time: 600, bones: { head: { rotation: 10, offsetY: 0 }, rightArm: { rotation: -90 } } },
+                        { time: 900, bones: { head: { rotation: -10, offsetY: 0 }, rightArm: { rotation: -30 } } },
+                        { time: 1200, bones: { head: { rotation: 10, offsetY: 0 }, rightArm: { rotation: -90 } } },
+                        { time: 1500, bones: { head: { rotation: 0, offsetY: 0 }, rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createAttackAnimation() {
+                return {
+                    duration: 600,
+                    keyframes: [
+                        { time: 0, bones: { head: { rotation: 0, offsetY: 0 }, rightArm: { rotation: 0 }, body: { rotation: 0 } } },
+                        { time: 150, bones: { head: { rotation: 20, offsetY: 0 }, rightArm: { rotation: -120 }, body: { rotation: -15 } } },
+                        { time: 300, bones: { head: { rotation: -30, offsetY: 0 }, rightArm: { rotation: 60 }, body: { rotation: 20 } } },
+                        { time: 450, bones: { head: { rotation: 0, offsetY: 0 }, rightArm: { rotation: 0 }, body: { rotation: 0 } } },
+                        { time: 600, bones: { head: { rotation: 0, offsetY: 0 }, rightArm: { rotation: 0 }, body: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            interpolateKeyframes(keyframes, time) {
+                if (keyframes.length === 0) return {};
+                if (keyframes.length === 1) return keyframes[0].bones;
+
+                let fromKeyframe = keyframes[0];
+                let toKeyframe = keyframes[keyframes.length - 1];
+
+                for (let i = 0; i < keyframes.length - 1; i++) {
+                    if (time >= keyframes[i].time && time <= keyframes[i + 1].time) {
+                        fromKeyframe = keyframes[i];
+                        toKeyframe = keyframes[i + 1];
+                        break;
+                    }
+                }
+
+                const duration = toKeyframe.time - fromKeyframe.time;
+                const elapsed = time - fromKeyframe.time;
+                const t = duration > 0 ? elapsed / duration : 0;
+                const eased = this.easeInOutCubic(t);
+
+                const result = {};
+                const bones = ['head', 'body', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'tail', 'leftEar', 'rightEar'];
+
+                bones.forEach(bone => {
+                    if (fromKeyframe.bones[bone] && toKeyframe.bones[bone]) {
+                        result[bone] = {};
+                        Object.keys(fromKeyframe.bones[bone]).forEach(prop => {
+                            const from = fromKeyframe.bones[bone][prop];
+                            const to = toKeyframe.bones[bone][prop];
+                            result[bone][prop] = from + (to - from) * eased;
+                        });
+                    }
+                });
+
+                return result;
+            }
+
+            easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            lerp(a, b, t) {
+                return a + (b - a) * t;
+            }
+
+            blendTo(animationName, duration) {
+                if (!this.animations[animationName]) return;
+                this.blendFrom = { ...this.boneTransforms };
+                this.blendDuration = duration;
+                this.blendProgress = 0;
+                this.currentAnimation = animationName;
+            }
+
+            play(animationName) {
+                if (!this.animations[animationName]) return;
+                this.currentAnimation = animationName;
+                this.animationProgress = 0;
+                this.blendProgress = 1;
+            }
+
+            stop() {
+                this.currentAnimation = 'idle';
+                this.animationProgress = 0;
+            }
+
+            start() {
+                if (this.isRunning) return;
+                this.isRunning = true;
+                this.lastTime = performance.now();
+                this.tick();
+            }
+
+            stop() {
+                this.isRunning = false;
+                if (this.animationFrame) {
+                    cancelAnimationFrame(this.animationFrame);
+                    this.animationFrame = null;
+                }
+            }
+
+            tick() {
+                if (!this.isRunning) return;
+
+                const currentTime = performance.now();
+                const deltaTime = (currentTime - this.lastTime) * this.animationSpeed;
+                this.lastTime = currentTime;
+
+                if (this.currentAnimation && this.animations[this.currentAnimation]) {
+                    const animation = this.animations[this.currentAnimation];
+                    this.animationProgress += deltaTime;
+
+                    if (this.animationProgress >= animation.duration) {
+                        this.animationProgress = this.animationProgress % animation.duration;
+                    }
+
+                    const targetBones = this.interpolateKeyframes(animation.keyframes, this.animationProgress);
+
+                    if (this.blendProgress < 1 && this.blendFrom) {
+                        this.blendProgress = Math.min(1, this.blendProgress + (deltaTime / this.animationSpeed) / this.blendDuration);
+                        const t = this.easeInOutCubic(this.blendProgress);
+
+                        Object.keys(targetBones).forEach(bone => {
+                            if (this.boneTransforms[bone]) {
+                                Object.keys(targetBones[bone]).forEach(prop => {
+                                    const from = this.blendFrom[bone]?.[prop] || 0;
+                                    const to = targetBones[bone][prop];
+                                    this.boneTransforms[bone][prop] = this.lerp(from, to, t);
+                                });
+                            }
+                        });
+                    } else {
+                        Object.keys(targetBones).forEach(bone => {
+                            if (this.boneTransforms[bone]) {
+                                Object.keys(targetBones[bone]).forEach(prop => {
+                                    this.boneTransforms[bone][prop] = targetBones[bone][prop];
+                                });
+                            }
+                        });
+                    }
+
+                    this.applyTransforms();
+                }
+
+                this.animationFrame = requestAnimationFrame(() => this.tick());
+            }
+
+            applyTransforms() {
+                const e = this.elements;
+                const t = this.boneTransforms;
+                const amp = this.animationAmplitude;
+
+                const getAmplitudeMultiplier = (baseAmp, defaultAmp) => {
+                    return baseAmp / defaultAmp;
+                };
+
+                if (e.petHead) {
+                    const headAmp = getAmplitudeMultiplier(amp.head, 15);
+                    e.petHead.style.transform = `translateX(-50%) translateY(${t.head.offsetY || 0}px) rotate(${t.head.rotation * headAmp / 15}deg)`;
+                }
+                if (e.petBody) {
+                    e.petBody.style.transform = `translateX(-50%) rotate(${t.body.rotation || 0}deg)`;
+                }
+                if (e.petLeftArm) {
+                    const armAmp = getAmplitudeMultiplier(amp.arm, 25);
+                    e.petLeftArm.style.transform = `rotate(${t.leftArm.rotation * armAmp / 25}deg)`;
+                }
+                if (e.petRightArm) {
+                    const armAmp = getAmplitudeMultiplier(amp.arm, 25);
+                    e.petRightArm.style.transform = `rotate(${t.rightArm.rotation * armAmp / 25}deg)`;
+                }
+                if (e.petLeftLeg) {
+                    const legAmp = getAmplitudeMultiplier(amp.leg, 25);
+                    e.petLeftLeg.style.transform = `rotate(${t.leftLeg.rotation * legAmp / 25}deg)`;
+                }
+                if (e.petRightLeg) {
+                    const legAmp = getAmplitudeMultiplier(amp.leg, 25);
+                    e.petRightLeg.style.transform = `rotate(${t.rightLeg.rotation * legAmp / 25}deg)`;
+                }
+                if (e.petTail) {
+                    const tailAmp = getAmplitudeMultiplier(amp.tail, 20);
+                    e.petTail.style.transform = `rotate(${t.tail.rotation * tailAmp / 20}deg)`;
+                }
+                if (e.petLeftEar) {
+                    e.petLeftEar.style.transform = `rotate(${-15 + (t.leftEar.rotation || 0)}deg)`;
+                }
+                if (e.petRightEar) {
+                    e.petRightEar.style.transform = `rotate(${15 + (t.rightEar.rotation || 0)}deg)`;
+                }
+            }
+
+            setBoneTransform(bone, transform) {
+                if (this.boneTransforms[bone]) {
+                    Object.assign(this.boneTransforms[bone], transform);
+                }
+            }
+
+            getBoneTransform(bone) {
+                return this.boneTransforms[bone] || {};
+            }
+
+            resetBones() {
+                Object.keys(this.boneTransforms).forEach(bone => {
+                    this.boneTransforms[bone] = { rotation: 0, offsetX: 0, offsetY: 0 };
+                });
+                if (this.elements.petLeftEar) this.elements.petLeftEar.style.transform = 'rotate(-15deg)';
+                if (this.elements.petRightEar) this.elements.petRightEar.style.transform = 'rotate(15deg)';
+            }
+        }
+
         class PetModule {
             constructor() {
                 this.elements = {
@@ -3261,7 +3757,17 @@
                     petTypeBtns: document.querySelectorAll('.petTypeBtn'),
                     petPreview: document.getElementById('petPreview'),
                     petPreviewCharacter: document.getElementById('petPreviewCharacter'),
-                    editPanelContent: document.getElementById('editPanelContent')
+                    editPanelContent: document.getElementById('editPanelContent'),
+                    petHead: document.getElementById('petHead'),
+                    petBody: document.getElementById('petBody'),
+                    petLeftArm: document.getElementById('petLeftArm'),
+                    petRightArm: document.getElementById('petRightArm'),
+                    petLeftLeg: document.getElementById('petLeftLeg'),
+                    petRightLeg: document.getElementById('petRightLeg'),
+                    petTail: document.getElementById('petTail'),
+                    petLeftEar: document.getElementById('petLeftEar'),
+                    petRightEar: document.getElementById('petRightEar'),
+                    petEmoji: document.getElementById('petEmoji')
                 };
                 
                 this.recognizer = null;
@@ -3315,7 +3821,51 @@
                 return this._supabaseClient;
             }
 
+            initSkeletonAnimation() {
+                this.skeleton = new SkeletonAnimation(this.elements);
+                this.stateMachine = new StateMachine(this, {
+                    idle: { enter: () => this.skeleton.play('idle'), exit: () => this.skeleton.stop() },
+                    walk: { enter: () => this.skeleton.play('walk'), exit: () => this.skeleton.stop() },
+                    run: { enter: () => this.skeleton.play('run'), exit: () => this.skeleton.stop() },
+                    jump: { enter: () => this.skeleton.play('jump'), exit: () => this.skeleton.stop() },
+                    dance: { enter: () => this.skeleton.play('dance'), exit: () => this.skeleton.stop() },
+                    wave: { enter: () => this.skeleton.play('wave'), exit: () => this.skeleton.stop() },
+                    sit: { enter: () => this.skeleton.play('sit'), exit: () => this.skeleton.stop() },
+                    sleep: { enter: () => this.skeleton.play('sleep'), exit: () => this.skeleton.stop() },
+                    greet: { enter: () => this.skeleton.play('greet'), exit: () => this.skeleton.stop() },
+                    attack: { enter: () => this.skeleton.play('attack'), exit: () => this.skeleton.stop() }
+                }, 'idle');
+                this.skeleton.start();
+            }
+
+            executeAction(action) {
+                if (this.stateMachine) {
+                    this.stateMachine.setState(action);
+                    this.updateStateDisplay(action);
+                }
+            }
+
+            updateStateDisplay(state) {
+                const stateDisplay = document.getElementById('currentStateDisplay');
+                const stateNames = {
+                    idle: '空闲中',
+                    walk: '行走中',
+                    run: '奔跑中',
+                    jump: '跳跃中',
+                    dance: '跳舞中',
+                    wave: '挥手中',
+                    sit: '坐下中',
+                    sleep: '睡眠中',
+                    greet: '打招呼中',
+                    attack: '攻击中'
+                };
+                if (stateDisplay) {
+                    stateDisplay.textContent = stateNames[state] || state;
+                }
+            }
+
             initPet() {
+                this.initSkeletonAnimation();
                 this.showBubble('你好！我是你的宠物助手～');
             }
             
@@ -3426,7 +3976,78 @@
                         this.closeEditor();
                     });
                 }
-                
+
+                const animTestBtns = document.querySelectorAll('.animTestBtn');
+                if (animTestBtns.length > 0) {
+                    animTestBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const action = btn.dataset.action;
+                            this.executeAction(action);
+                        });
+                    });
+                }
+
+                const headAmpSlider = document.getElementById('headAmp');
+                const armAmpSlider = document.getElementById('armAmp');
+                const legAmpSlider = document.getElementById('legAmp');
+                const tailAmpSlider = document.getElementById('tailAmp');
+                const animSpeedSlider = document.getElementById('animSpeed');
+                const transDurSlider = document.getElementById('transDur');
+
+                if (headAmpSlider) {
+                    headAmpSlider.addEventListener('input', (e) => {
+                        document.getElementById('headAmpVal').textContent = e.target.value + '°';
+                        if (this.skeleton) {
+                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
+                            this.skeleton.animationAmplitude.head = parseInt(e.target.value);
+                        }
+                    });
+                }
+                if (armAmpSlider) {
+                    armAmpSlider.addEventListener('input', (e) => {
+                        document.getElementById('armAmpVal').textContent = e.target.value + '°';
+                        if (this.skeleton) {
+                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
+                            this.skeleton.animationAmplitude.arm = parseInt(e.target.value);
+                        }
+                    });
+                }
+                if (legAmpSlider) {
+                    legAmpSlider.addEventListener('input', (e) => {
+                        document.getElementById('legAmpVal').textContent = e.target.value + '°';
+                        if (this.skeleton) {
+                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
+                            this.skeleton.animationAmplitude.leg = parseInt(e.target.value);
+                        }
+                    });
+                }
+                if (tailAmpSlider) {
+                    tailAmpSlider.addEventListener('input', (e) => {
+                        document.getElementById('tailAmpVal').textContent = e.target.value + '°';
+                        if (this.skeleton) {
+                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
+                            this.skeleton.animationAmplitude.tail = parseInt(e.target.value);
+                        }
+                    });
+                }
+                if (animSpeedSlider) {
+                    animSpeedSlider.addEventListener('input', (e) => {
+                        const speed = parseInt(e.target.value) / 100;
+                        document.getElementById('animSpeedVal').textContent = speed.toFixed(1) + 'x';
+                        if (this.skeleton) {
+                            this.skeleton.animationSpeed = speed;
+                        }
+                    });
+                }
+                if (transDurSlider) {
+                    transDurSlider.addEventListener('input', (e) => {
+                        document.getElementById('transDurVal').textContent = e.target.value + 'ms';
+                        if (this.stateMachine) {
+                            this.stateMachine.transitionDuration = parseInt(e.target.value);
+                        }
+                    });
+                }
+
                 // 宠物类型选择
                 if (this.elements.petTypeBtns && this.elements.petTypeBtns.length > 0) {
                     this.elements.petTypeBtns.forEach(btn => {
@@ -3641,101 +4262,64 @@
             
             executeActionAsync(action) {
                 return new Promise((resolve) => {
-                    switch (action) {
-                        case 'dance':
-                            this.dance(resolve);
-                            break;
-                        case 'circle':
-                            this.circle(resolve);
-                            break;
-                        case 'greet':
-                            this.greet(resolve);
-                            break;
-                        case 'sit':
-                            this.sit(resolve);
-                            break;
-                        case 'crouch':
-                            this.crouch(resolve);
-                            break;
-                        case 'lie':
-                            this.lie(resolve);
-                            break;
-                        case 'stand':
-                            this.stand(resolve);
-                            break;
-                        case 'handshake':
-                            this.handshake(resolve);
-                            break;
-                        case 'heart':
-                            this.heart(resolve);
-                            break;
-                        case 'salute':
-                            this.salute(resolve);
-                            break;
-                        case 'pat':
-                            this.pat(resolve);
-                            break;
-                        case 'angry':
-                            this.angry(resolve);
-                            break;
-                        case 'jump':
-                            this.jump(resolve);
-                            break;
-                        case 'slideLeft':
-                            this.slideLeft(resolve);
-                            break;
-                        case 'slideRight':
-                            this.slideRight(resolve);
-                            break;
-                        case 'follow':
-                            this.follow(resolve);
-                            break;
-                        case 'walk':
-                            this.walk(resolve);
-                            break;
-                        case 'patrol':
-                            this.patrol(resolve);
-                            break;
-                        default:
-                            resolve();
+                    const actionDurations = {
+                        dance: 3600,
+                        circle: 3000,
+                        greet: 1500,
+                        sit: 500,
+                        crouch: 500,
+                        lie: 500,
+                        stand: 500,
+                        handshake: 2000,
+                        heart: 2000,
+                        salute: 2000,
+                        pat: 2000,
+                        angry: 2000,
+                        jump: 2400,
+                        slideLeft: 1000,
+                        slideRight: 1000,
+                        follow: 5000,
+                        walk: 3000,
+                        patrol: 10000
+                    };
+
+                    const duration = actionDurations[action] || 1000;
+
+                    if (this.skeleton && this.stateMachine) {
+                        this.stateMachine.setState(action);
+                        this.showBubble(this.getActionMessage(action));
+                        setTimeout(() => {
+                            this.stateMachine.setState('idle');
+                            if (resolve) resolve();
+                        }, duration);
+                    } else {
+                        if (resolve) resolve();
                     }
                 });
             }
-            
-            dance(resolve) {
-                this.showBubble('跳舞啦！');
-                this.elements.petCharacter.style.animation = 'dance 1s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            circle(resolve) {
-                this.showBubble('转圈啦！');
-                this.elements.petCharacter.style.animation = 'spin 1s linear infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            greet(resolve) {
-                this.showBubble('你好呀！');
-                this.elements.petCharacter.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 1000);
-            }
-            
-            sit(resolve) {
-                this.showBubble('我坐下啦！');
-                this.elements.petCharacter.style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 2000);
+
+            getActionMessage(action) {
+                const messages = {
+                    dance: '跳舞啦！',
+                    circle: '转圈啦！',
+                    greet: '你好呀！',
+                    sit: '我坐下啦！',
+                    crouch: '蹲下啦！',
+                    lie: '趴下休息啦！',
+                    stand: '站立起来！',
+                    handshake: '握握手！',
+                    heart: '比心给你！',
+                    salute: '敬礼！',
+                    pat: '摸头好舒服！',
+                    angry: '生气啦！',
+                    jump: '跳高高！',
+                    slideLeft: '向左滑！',
+                    slideRight: '向右滑！',
+                    follow: '跟随主人！',
+                    walk: '开始散步！',
+                    patrol: '巡逻中...'
+                };
+                return messages[action] || '执行动作中...';
             }
             
             crouch(resolve) {
@@ -4275,9 +4859,6 @@
     const petModule = new PetModule();
 
     App.init();
-    
-    // 应用物理效果
-    petModule.applyPhysics();
 </script>
 </body>
 </html>
