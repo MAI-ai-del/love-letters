@@ -1902,17 +1902,8 @@
                 }
             })
             
-            // 输入事件（使用防抖优化）
-            const debounce = (func, delay) => {
-                let timer
-                return function() {
-                    clearTimeout(timer)
-                    timer = setTimeout(() => func.apply(this, arguments), delay)
-                }
-            }
-            
             // 字数统计
-            const updateCountersDebounced = debounce(() => this.updateCounters(), 100);
+            const updateCountersDebounced = this.debounce(() => this.updateCounters(), 100);
             ['line1Input', 'line2Input', 'line3Input', 'storyInput'].forEach(inputId => {
                 const input = this.elements[inputId]
                 if (input) {
