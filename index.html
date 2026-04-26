@@ -1084,53 +1084,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
-        /* 宠物编辑器 */
-        #petEditor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        /* 编辑器主体 */
-        .editor-body {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        /* 类型选择器 */
-        .type-selector {
-            flex: 0 0 150px;
-        }
-        
-        /* 预览区域 */
-        .preview-area {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,240,240,0.5);
-            border-radius: 20px;
-            min-height: 300px;
-        }
-        
-        .edit-panel {
-            flex: 0 0 300px;
-        }
-        
         /* 骨骼系统样式 */
         .skeleton-root {
             position: relative;
@@ -1767,15 +1720,9 @@
                         EventBus.emit(Constants.EVENTS.USER_LOGIN, this.state.currentUser);
                     }
                 }
-
-                setTimeout(() => {
-                    if (!this.state.currentUser && !this.config.guestMode) {
-                        this.updateAuthUI(null);
-                    }
-                }, 1000);
             } catch (error) {
                 this.logError(error, '初始化')
-                this.showError('初始化失败，请刷新页面重试')
+                this.showError('初始化失败，请刷新页面重试', error)
             }
         },
         /**
@@ -1831,10 +1778,19 @@
         // 错误日志
         logError(error, context) {
             try {
-                console.error(`[${context}]`, error)
+                const timestamp = new Date().toISOString();
+                const errorInfo = {
+                    timestamp,
+                    context,
+                    message: error.message || 'Unknown error',
+                    stack: error.stack,
+                    user: this.state.currentUser ? this.state.currentUser.email : 'Guest'
+                };
+                console.error(`[${context}]`, errorInfo);
+                // 可以考虑将错误信息发送到服务器进行分析
                 // 简化错误日志，避免依赖 App.state
             } catch (err) {
-                console.error('logError itself failed:', err)
+                console.error('logError itself failed:', err);
             }
         },
 
@@ -1956,7 +1912,7 @@
             }
             
             // 字数统计
-            const updateCountersDebounced = debounce(() => this.updateCounters(), 100)
+            const updateCountersDebounced = debounce(() => this.updateCounters(), 100);
             ['line1Input', 'line2Input', 'line3Input', 'storyInput'].forEach(inputId => {
                 const input = this.elements[inputId]
                 if (input) {
@@ -2827,8 +2783,12 @@
         },
         
         // 显示错误信息
-        showError(message) {
-            alert(`错误: ${message}`)
+        showError(message, error = null) {
+            let displayMessage = `错误: ${message}`;
+            if (error && error.message) {
+                displayMessage += `\n详细信息: ${error.message}`;
+            }
+            alert(displayMessage);
         },
         
         // 获取用户友好的错误信息
@@ -3104,102 +3064,6 @@
         <div id="petBubble" style="position: absolute; bottom: 100px; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 12px; max-width: 200px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: none;"></div>
     </div>
     
-    <!-- 宠物自定义编辑器 -->
-    <div id="petEditor" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: none; flex-direction: column;">
-        <div style="background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="color: var(--text-color); margin: 0;">宠物自定义</h2>
-            <div style="display: flex; gap: 10px;">
-                <button id="savePetBtn" style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">保存</button>
-                <button id="cancelPetBtn" style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">取消</button>
-            </div>
-        </div>
-        <div style="flex: 1; display: flex; padding: 20px; gap: 20px;">
-            <!-- 类型选择 -->
-            <div style="width: 200px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px;">
-                <h3 style="color: var(--text-color); margin-top: 0; margin-bottom: 15px;">宠物类型</h3>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="petTypeBtn" data-type="dog" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">🐶 狗</button>
-                    <button class="petTypeBtn" data-type="cat" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">🐱 猫</button>
-                    <button class="petTypeBtn" data-type="human" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer;">👤 人形</button>
-                </div>
-                <h3 style="color: var(--text-color); margin-top: 20px; margin-bottom: 15px;">动作测试</h3>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <button class="animTestBtn" data-action="idle" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">空闲</button>
-                    <button class="animTestBtn" data-action="walk" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">行走</button>
-                    <button class="animTestBtn" data-action="run" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">奔跑</button>
-                    <button class="animTestBtn" data-action="jump" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">跳跃</button>
-                    <button class="animTestBtn" data-action="dance" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">跳舞</button>
-                    <button class="animTestBtn" data-action="wave" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">挥手</button>
-                    <button class="animTestBtn" data-action="attack" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">攻击</button>
-                </div>
-            </div>
-
-            <!-- 预览区 -->
-            <div style="flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; align-items: center; justify-content: center;">
-                <div id="petPreview" style="width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
-                    <div id="petPreviewCharacter" style="width: 150px; height: 150px; background: #ffb6c1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px;">
-                        🐱
-                    </div>
-                </div>
-            </div>
-
-            <!-- 编辑面板 -->
-            <div style="width: 320px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; max-height: 500px; overflow-y: auto;">
-                <h3 style="color: var(--text-color); margin-top: 0; margin-bottom: 15px;">动画参数调整</h3>
-                <div id="animParamsPanel" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>头部摆动幅度</span>
-                            <span id="headAmpVal">15°</span>
-                        </label>
-                        <input type="range" id="headAmp" min="0" max="30" value="15" style="width: 100%; margin-top: 5px;">
-                    </div>
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>手臂摆动幅度</span>
-                            <span id="armAmpVal">25°</span>
-                        </label>
-                        <input type="range" id="armAmp" min="0" max="45" value="25" style="width: 100%; margin-top: 5px;">
-                    </div>
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>腿部摆动幅度</span>
-                            <span id="legAmpVal">25°</span>
-                        </label>
-                        <input type="range" id="legAmp" min="0" max="45" value="25" style="width: 100%; margin-top: 5px;">
-                    </div>
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>尾巴摆动幅度</span>
-                            <span id="tailAmpVal">20°</span>
-                        </label>
-                        <input type="range" id="tailAmp" min="0" max="40" value="20" style="width: 100%; margin-top: 5px;">
-                    </div>
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>动画速度</span>
-                            <span id="animSpeedVal">1.0x</span>
-                        </label>
-                        <input type="range" id="animSpeed" min="50" max="200" value="100" style="width: 100%; margin-top: 5px;">
-                    </div>
-                    <div class="paramGroup" style="background: var(--input-bg); padding: 10px; border-radius: 8px;">
-                        <label style="color: var(--text-color); font-size: 12px; display: flex; justify-content: space-between;">
-                            <span>过渡时长</span>
-                            <span id="transDurVal">200ms</span>
-                        </label>
-                        <input type="range" id="transDur" min="50" max="500" value="200" style="width: 100%; margin-top: 5px;">
-                    </div>
-                </div>
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                    <h4 style="color: var(--text-color); margin: 0 0 10px 0; font-size: 14px;">当前状态</h4>
-                    <div id="currentStateDisplay" style="color: var(--text-color); font-size: 12px; background: var(--input-bg); padding: 8px; border-radius: 8px;">
-                        空闲中
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 宠物模块脚本 -->
     <script>
         /**
@@ -3774,13 +3638,6 @@
                     petBubble: document.getElementById('petBubble'),
                     commandBtns: document.querySelectorAll('.petCommandBtn'),
                     customizePetBtn: document.getElementById('customizePetBtn'),
-                    petEditor: document.getElementById('petEditor'),
-                    savePetBtn: document.getElementById('savePetBtn'),
-                    cancelPetBtn: document.getElementById('cancelPetBtn'),
-                    petTypeBtns: document.querySelectorAll('.petTypeBtn'),
-                    petPreview: document.getElementById('petPreview'),
-                    petPreviewCharacter: document.getElementById('petPreviewCharacter'),
-                    editPanelContent: document.getElementById('editPanelContent'),
                     petHead: document.getElementById('petHead'),
                     petBody: document.getElementById('petBody'),
                     petLeftArm: document.getElementById('petLeftArm'),
@@ -3796,13 +3653,6 @@
                 this.recognizer = null;
                 this.recognitionTimeout = null;
                 this.isListening = false;
-                this.currentPetType = 'cat';
-                this.petConfig = {
-                    type: 'cat',
-                    head: '',
-                    body: '',
-                    parts: {}
-                };
                 this.storage = {
                     save: (key, data) => Storage.save(key, data),
                     load: (key, defaultValue) => Storage.load(key, defaultValue)
@@ -3825,9 +3675,6 @@
             _bindEventBusListeners() {
                 EventBus.on(Constants.EVENTS.USER_LOGIN, (user) => {
                     this._currentUser = user;
-                    if (user) {
-                        this.syncPetConfigFromCloud();
-                    }
                 });
                 EventBus.on(Constants.EVENTS.USER_LOGOUT, () => {
                     this._currentUser = null;
@@ -3960,7 +3807,7 @@
                                 left: petContainer.style.left,
                                 top: petContainer.style.top
                             };
-                            this.storage.save('petPosition', position);
+                            this.storage.save(Constants.STORAGE_KEYS.PET_POSITION, position);
                         }
                     });
                 }
@@ -4046,19 +3893,6 @@
                     });
                 }
 
-                // 宠物类型选择
-                if (this.elements.petTypeBtns && this.elements.petTypeBtns.length > 0) {
-                    this.elements.petTypeBtns.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const type = btn.dataset.type;
-                            this.selectPetType(type);
-                            // 更新选中状态
-                            this.elements.petTypeBtns.forEach(b => b.style.backgroundColor = 'var(--btn-bg)');
-                            btn.style.backgroundColor = 'var(--btn-hover)';
-                        });
-                    });
-                }
-                
                 // 窗口大小变化时调整宠物位置
                 window.addEventListener('resize', () => {
                     this.adjustPetPosition();
@@ -4093,7 +3927,7 @@
                 petContainer.style.top = currentTop + 'px';
                 
                 // 保存新位置
-                this.storage.save('petPosition', {
+                this.storage.save(Constants.STORAGE_KEYS.PET_POSITION, {
                     left: petContainer.style.left,
                     top: petContainer.style.top
                 });
@@ -4380,7 +4214,7 @@
             
             loadPetConfig() {
                 try {
-                    const savedPosition = this.storage.load('petPosition', null);
+                    const savedPosition = this.storage.load(Constants.STORAGE_KEYS.PET_POSITION, null);
                     if (savedPosition) {
                         const petContainer = this.elements.petContainer;
                         petContainer.style.left = savedPosition.left || '80%';
