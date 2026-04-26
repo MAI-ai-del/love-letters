@@ -1903,7 +1903,7 @@
             })
             
             // 字数统计
-            const updateCountersDebounced = this.debounce(() => this.updateCounters(), 100);
+            const updateCountersDebounced = Utils.debounce(() => this.updateCounters(), 100);
             ['line1Input', 'line2Input', 'line3Input', 'storyInput'].forEach(inputId => {
                 const input = this.elements[inputId]
                 if (input) {
@@ -1934,7 +1934,7 @@
             }
             
             // 搜索
-            const searchDebounced = debounce(() => {
+            const searchDebounced = Utils.debounce(() => {
                 if (this.state.currentMode === 'all') {
                     this.state.currentPage = 1
                     this.loadData('all', this.elements.searchInput.value, 1)
