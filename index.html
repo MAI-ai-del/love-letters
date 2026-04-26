@@ -4858,7 +4858,10 @@
     // 初始化宠物模块
     const petModule = new PetModule();
 
-    App.init();
+    // 初始化应用（使用DOMContentLoaded确保DOM加载完成）
+    document.addEventListener('DOMContentLoaded', () => {
+        App.init();
+    });
 </script>
 </body>
 </html>
