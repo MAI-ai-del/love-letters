@@ -1393,58 +1393,7 @@
     </div>
 </main>
 
-<!-- ========== 宠物模块 ========== -->
-<div id="petContainer">
-    <div id="petWindow" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 15px; max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="color: var(--text-color); margin: 0; font-size: 16px;">宠物交互</h3>
-            <div style="display: flex; gap: 8px;">
-                <button id="customizePetBtn" style="padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">✨ 自定义</button>
-                <button id="closePetWindow" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-color);">&times;</button>
-            </div>
-        </div>
-        <div id="petChat" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; font-size: 14px; line-height: 1.4;"></div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-            <button class="petCommandBtn" data-command="dance" style="flex: 1; padding: 6px;">跳舞</button>
-            <button class="petCommandBtn" data-command="circle" style="flex: 1; padding: 6px;">转圈</button>
-            <button class="petCommandBtn" data-command="greet" style="flex: 1; padding: 6px;">打招呼</button>
-            <button class="petCommandBtn" data-command="sit" style="flex: 1; padding: 6px;">坐下</button>
-            <button class="petCommandBtn" data-command="handshake" style="flex: 1; padding: 6px;">握手</button>
-            <button class="petCommandBtn" data-command="heart" style="flex: 1; padding: 6px;">比心</button>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <input type="text" id="petInput" placeholder="输入指令..." style="flex: 1; padding: 8px;">
-            <button id="petSendBtn" style="padding: 8px 12px;">发送</button>
-            <button id="petVoiceBtn" style="width: 36px; height: 36px;">🎤</button>
-        </div>
-    </div>
-    <!-- 宠物显示区（动态生成） -->
-    <div id="petCharacter"></div>
-    <div id="petBubble" style="position: absolute; bottom: 110px; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 8px 12px; max-width: 200px; font-size: 14px; display: none;"></div>
-</div>
 
-<!-- ========== 宠物编辑器 ========== -->
-<div id="petEditor">
-    <div style="background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="color: var(--text-color); margin: 0;">自定义宠物形象</h2>
-        <div style="display: flex; gap: 10px;">
-            <button id="savePetBtn" class="auth-btn">保存</button>
-            <button id="cancelPetBtn" class="auth-btn">取消</button>
-        </div>
-    </div>
-    <div class="editor-body">
-        <div class="type-selector">
-            <h3 style="color: var(--text-color); margin-top: 0;">类型</h3>
-            <button class="petTypeBtn auth-btn" data-type="dog" style="width:100%; margin-bottom:10px;">🐶 狗</button>
-            <button class="petTypeBtn auth-btn" data-type="cat" style="width:100%; margin-bottom:10px;">🐱 猫</button>
-            <button class="petTypeBtn auth-btn" data-type="human" style="width:100%;">👤 人形</button>
-        </div>
-        <div class="preview-area" id="petPreview"></div>
-        <div class="edit-panel" id="editPanelContent">
-            <p style="color: var(--text-color); text-align: center;">请选择宠物类型</p>
-        </div>
-    </div>
-</div>
 
 <script>
     /**
@@ -2963,7 +2912,7 @@
         toggleTheme() {
             const isDarkMode = document.body.classList.toggle('dark-mode')
             // 保存主题偏好到本地存储
-            this.storage.save('darkMode', isDarkMode)
+            this.storage.save(Constants.STORAGE_KEYS.THEME, isDarkMode)
             // 更新按钮文本
             if (this.elements.themeToggleBtn) {
                 this.elements.themeToggleBtn.textContent = isDarkMode ? '☀️ 浅色模式' : '🌙 深色模式'
@@ -3087,88 +3036,6 @@
                 this.elements.deleteModal.style.display = 'flex'
             }
         },
-        
-        // 切换全选/取消全选
-        toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('.card-checkbox')
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked)
-            checkboxes.forEach(cb => {
-                cb.checked = !allChecked
-            })
-        },
-        
-        // 批量删除
-        async batchDelete() {
-            const selectedCheckboxes = document.querySelectorAll('.card-checkbox:checked')
-            if (selectedCheckboxes.length === 0) {
-                alert('请先选择要删除的情书')
-                return
-            }
-            
-            if (!confirm(`确定要删除选中的 ${selectedCheckboxes.length} 封情书吗？`)) {
-                return
-            }
-            
-            try {
-                // 获取当前用户ID
-                const currentUserId = this.getEffectiveUserId()
-                if (!currentUserId) {
-                    alert('请先设置昵称')
-                    return
-                }
-                
-                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.id)
-                console.log('开始批量删除情书，IDs:', selectedIds, '用户ID:', currentUserId)
-                
-                // 批量删除操作 - 使用 in 操作符一次性删除多个ID
-                const { error } = await this.supabase
-                    .from(this.config.tableName)
-                    .delete()
-                    .in('id', selectedIds)
-                    .eq('user_id', currentUserId) // 确保只能删除自己的内容
-                
-                if (error) {
-                    console.error('批量删除失败:', error)
-                    throw error
-                }
-                
-                // 更新本地提名记录
-                selectedIds.forEach(id => {
-                    if (this.state.votedIds.has(id)) {
-                        this.state.votedIds.delete(id)
-                    }
-                })
-                
-                this.saveVotedIds()
-                
-                // 清除相关缓存
-                this.cache.clear()
-                
-                // 重新加载数据以确保一致性
-                console.log('重新加载数据')
-                await this.loadData(this.state.currentMode, this.elements.searchInput.value)
-                
-                // 显示成功提示
-                alert(`成功删除 ${selectedIds.length} 封情书`)
-            } catch (error) {
-                console.error('批量删除失败:', error)
-                alert('批量删除失败：' + error.message)
-            }
-        },
-        
-        // 显示/隐藏批量操作区域
-        updateBatchActionsVisibility() {
-            if (this.elements.batchActions) {
-                const currentUserId = this.config.guestMode ? this.state.guestId : (this.state.currentUser ? this.state.currentUser.id : null)
-                const hasOwnerCards = document.querySelector('.card-checkbox') !== null
-                
-                if (currentUserId && hasOwnerCards) {
-                    this.elements.batchActions.style.display = 'flex'
-                } else {
-                    this.elements.batchActions.style.display = 'none'
-                }
-            }
-        }
     }
     
     // 初始化应用
@@ -3407,7 +3274,19 @@
                     sit: this.createSitAnimation(),
                     sleep: this.createSleepAnimation(),
                     greet: this.createGreetAnimation(),
-                    attack: this.createAttackAnimation()
+                    attack: this.createAttackAnimation(),
+                    crouch: this.createCrouchAnimation(),
+                    lie: this.createLieAnimation(),
+                    stand: this.createStandAnimation(),
+                    handshake: this.createHandshakeAnimation(),
+                    heart: this.createHeartAnimation(),
+                    salute: this.createSaluteAnimation(),
+                    pat: this.createPatAnimation(),
+                    angry: this.createAngryAnimation(),
+                    slideLeft: this.createSlideLeftAnimation(),
+                    slideRight: this.createSlideRightAnimation(),
+                    follow: this.createFollowAnimation(),
+                    patrol: this.createPatrolAnimation()
                 };
 
                 this.boneTransforms = {
@@ -3548,6 +3427,147 @@
                 };
             }
 
+            createCrouchAnimation() {
+                return {
+                    duration: 500,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, body: { rotation: 0, offsetY: 0 }, head: { rotation: 0, offsetY: 0 } } },
+                        { time: 250, bones: { leftLeg: { rotation: 90 }, rightLeg: { rotation: 90 }, body: { rotation: 0, offsetY: 10 }, head: { rotation: 0, offsetY: 5 } } },
+                        { time: 500, bones: { leftLeg: { rotation: 90 }, rightLeg: { rotation: 90 }, body: { rotation: 0, offsetY: 10 }, head: { rotation: 0, offsetY: 5 } } }
+                    ]
+                };
+            }
+
+            createLieAnimation() {
+                return {
+                    duration: 800,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, body: { rotation: 0, offsetY: 0 }, head: { rotation: 0, offsetY: 0 } } },
+                        { time: 400, bones: { leftLeg: { rotation: 120 }, rightLeg: { rotation: 120 }, body: { rotation: 10, offsetY: 15 }, head: { rotation: 20, offsetY: 10 } } },
+                        { time: 800, bones: { leftLeg: { rotation: 120 }, rightLeg: { rotation: 120 }, body: { rotation: 10, offsetY: 15 }, head: { rotation: 20, offsetY: 10 } } }
+                    ]
+                };
+            }
+
+            createStandAnimation() {
+                return {
+                    duration: 500,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: 90 }, rightLeg: { rotation: 90 }, body: { rotation: 0, offsetY: 10 }, head: { rotation: 0, offsetY: 5 } } },
+                        { time: 250, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, body: { rotation: 0, offsetY: 0 }, head: { rotation: 0, offsetY: 0 } } },
+                        { time: 500, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, body: { rotation: 0, offsetY: 0 }, head: { rotation: 0, offsetY: 0 } } }
+                    ]
+                };
+            }
+
+            createHandshakeAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { rightArm: { rotation: 0 } } },
+                        { time: 250, bones: { rightArm: { rotation: -60 } } },
+                        { time: 500, bones: { rightArm: { rotation: -30 } } },
+                        { time: 750, bones: { rightArm: { rotation: -60 } } },
+                        { time: 1000, bones: { rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createHeartAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { leftArm: { rotation: 0 }, rightArm: { rotation: 0 } } },
+                        { time: 500, bones: { leftArm: { rotation: -60 }, rightArm: { rotation: -60 } } },
+                        { time: 1000, bones: { leftArm: { rotation: 0 }, rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createSaluteAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { rightArm: { rotation: 0 } } },
+                        { time: 300, bones: { rightArm: { rotation: -90 } } },
+                        { time: 700, bones: { rightArm: { rotation: -90 } } },
+                        { time: 1000, bones: { rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createPatAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { rightArm: { rotation: 0 }, head: { rotation: 0 } } },
+                        { time: 250, bones: { rightArm: { rotation: -45 }, head: { rotation: -10 } } },
+                        { time: 500, bones: { rightArm: { rotation: 0 }, head: { rotation: 0 } } },
+                        { time: 750, bones: { rightArm: { rotation: -45 }, head: { rotation: -10 } } },
+                        { time: 1000, bones: { rightArm: { rotation: 0 }, head: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createAngryAnimation() {
+                return {
+                    duration: 500,
+                    keyframes: [
+                        { time: 0, bones: { head: { rotation: 0 }, body: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 } } },
+                        { time: 125, bones: { head: { rotation: 10 }, body: { rotation: 5 }, leftArm: { rotation: 20 }, rightArm: { rotation: -20 } } },
+                        { time: 250, bones: { head: { rotation: -10 }, body: { rotation: -5 }, leftArm: { rotation: -20 }, rightArm: { rotation: 20 } } },
+                        { time: 375, bones: { head: { rotation: 10 }, body: { rotation: 5 }, leftArm: { rotation: 20 }, rightArm: { rotation: -20 } } },
+                        { time: 500, bones: { head: { rotation: 0 }, body: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 } } }
+                    ]
+                };
+            }
+
+            createSlideLeftAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { body: { offsetX: 0 } } },
+                        { time: 1000, bones: { body: { offsetX: -50 } } }
+                    ]
+                };
+            }
+
+            createSlideRightAnimation() {
+                return {
+                    duration: 1000,
+                    keyframes: [
+                        { time: 0, bones: { body: { offsetX: 0 } } },
+                        { time: 1000, bones: { body: { offsetX: 50 } } }
+                    ]
+                };
+            }
+
+            createFollowAnimation() {
+                return {
+                    duration: 2000,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: -15 }, rightLeg: { rotation: 15 }, leftArm: { rotation: 10 }, rightArm: { rotation: -10 }, head: { rotation: -2, offsetY: 0 } } },
+                        { time: 500, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -1 } } },
+                        { time: 1000, bones: { leftLeg: { rotation: 15 }, rightLeg: { rotation: -15 }, leftArm: { rotation: -10 }, rightArm: { rotation: 10 }, head: { rotation: 2, offsetY: 0 } } },
+                        { time: 1500, bones: { leftLeg: { rotation: 0 }, rightLeg: { rotation: 0 }, leftArm: { rotation: 0 }, rightArm: { rotation: 0 }, head: { rotation: 0, offsetY: -1 } } },
+                        { time: 2000, bones: { leftLeg: { rotation: -15 }, rightLeg: { rotation: 15 }, leftArm: { rotation: 10 }, rightArm: { rotation: -10 }, head: { rotation: -2, offsetY: 0 } } }
+                    ]
+                };
+            }
+
+            createPatrolAnimation() {
+                return {
+                    duration: 4000,
+                    keyframes: [
+                        { time: 0, bones: { leftLeg: { rotation: -20 }, rightLeg: { rotation: 20 }, leftArm: { rotation: 15 }, rightArm: { rotation: -15 }, head: { rotation: -2, offsetY: 0 } } },
+                        { time: 1000, bones: { leftLeg: { rotation: 20 }, rightLeg: { rotation: -20 }, leftArm: { rotation: -15 }, rightArm: { rotation: 15 }, head: { rotation: 2, offsetY: 0 } } },
+                        { time: 2000, bones: { leftLeg: { rotation: -20 }, rightLeg: { rotation: 20 }, leftArm: { rotation: 15 }, rightArm: { rotation: -15 }, head: { rotation: -2, offsetY: 0 } } },
+                        { time: 3000, bones: { leftLeg: { rotation: 20 }, rightLeg: { rotation: -20 }, leftArm: { rotation: -15 }, rightArm: { rotation: 15 }, head: { rotation: 2, offsetY: 0 } } },
+                        { time: 4000, bones: { leftLeg: { rotation: -20 }, rightLeg: { rotation: 20 }, leftArm: { rotation: 15 }, rightArm: { rotation: -15 }, head: { rotation: -2, offsetY: 0 } } }
+                    ]
+                };
+            }
+
             interpolateKeyframes(keyframes, time) {
                 if (keyframes.length === 0) return {};
                 if (keyframes.length === 1) return keyframes[0].bones;
@@ -3608,16 +3628,19 @@
                 this.blendProgress = 1;
             }
 
-            stop() {
-                this.currentAnimation = 'idle';
-                this.animationProgress = 0;
-            }
-
             start() {
                 if (this.isRunning) return;
                 this.isRunning = true;
                 this.lastTime = performance.now();
                 this.tick();
+            }
+
+            startLoop() {
+                this.start();
+            }
+
+            stopLoop() {
+                this.stop();
             }
 
             stop() {
@@ -3786,6 +3809,8 @@
                 };
                 this.actionQueue = [];
                 this.isExecutingAction = false;
+                this.messageQueue = [];
+                this.isShowingBubble = false;
                 this.followAnimationId = null;
                 this._currentUser = null;
                 this._supabaseClient = null;
@@ -3824,18 +3849,30 @@
             initSkeletonAnimation() {
                 this.skeleton = new SkeletonAnimation(this.elements);
                 this.stateMachine = new StateMachine(this, {
-                    idle: { enter: () => this.skeleton.play('idle'), exit: () => this.skeleton.stop() },
-                    walk: { enter: () => this.skeleton.play('walk'), exit: () => this.skeleton.stop() },
-                    run: { enter: () => this.skeleton.play('run'), exit: () => this.skeleton.stop() },
-                    jump: { enter: () => this.skeleton.play('jump'), exit: () => this.skeleton.stop() },
-                    dance: { enter: () => this.skeleton.play('dance'), exit: () => this.skeleton.stop() },
-                    wave: { enter: () => this.skeleton.play('wave'), exit: () => this.skeleton.stop() },
-                    sit: { enter: () => this.skeleton.play('sit'), exit: () => this.skeleton.stop() },
-                    sleep: { enter: () => this.skeleton.play('sleep'), exit: () => this.skeleton.stop() },
-                    greet: { enter: () => this.skeleton.play('greet'), exit: () => this.skeleton.stop() },
-                    attack: { enter: () => this.skeleton.play('attack'), exit: () => this.skeleton.stop() }
+                    idle: { enter: () => { this.skeleton.play('idle'); this.skeleton.stopLoop(); }, exit: () => {} },
+                    walk: { enter: () => { this.skeleton.play('walk'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    run: { enter: () => { this.skeleton.play('run'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    jump: { enter: () => { this.skeleton.play('jump'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    dance: { enter: () => { this.skeleton.play('dance'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    wave: { enter: () => { this.skeleton.play('wave'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    sit: { enter: () => { this.skeleton.play('sit'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    sleep: { enter: () => { this.skeleton.play('sleep'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    greet: { enter: () => { this.skeleton.play('greet'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    attack: { enter: () => { this.skeleton.play('attack'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    crouch: { enter: () => { this.skeleton.play('crouch'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    lie: { enter: () => { this.skeleton.play('lie'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    stand: { enter: () => { this.skeleton.play('stand'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    handshake: { enter: () => { this.skeleton.play('handshake'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    heart: { enter: () => { this.skeleton.play('heart'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    salute: { enter: () => { this.skeleton.play('salute'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    pat: { enter: () => { this.skeleton.play('pat'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    angry: { enter: () => { this.skeleton.play('angry'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    slideLeft: { enter: () => { this.skeleton.play('slideLeft'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    slideRight: { enter: () => { this.skeleton.play('slideRight'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    follow: { enter: () => { this.skeleton.play('follow'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() },
+                    patrol: { enter: () => { this.skeleton.play('patrol'); this.skeleton.startLoop(); }, exit: () => this.skeleton.stopLoop() }
                 }, 'idle');
-                this.skeleton.start();
+                // 初始状态为idle，所以不需要启动循环
             }
 
             executeAction(action) {
@@ -3879,6 +3916,52 @@
                         setTimeout(() => {
                             this.elements.petCharacter.style.transform = '';
                         }, 150);
+                    });
+
+                    // 宠物拖动功能
+                    let isDragging = false;
+                    let startX, startY, startLeft, startTop;
+
+                    this.elements.petCharacter.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        isDragging = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        
+                        const petContainer = this.elements.petContainer;
+                        startLeft = parseInt(petContainer.style.left || '0');
+                        startTop = parseInt(petContainer.style.top || '0');
+                        
+                        // 添加拖动反馈
+                        this.elements.petCharacter.style.cursor = 'grabbing';
+                        this.elements.petCharacter.style.transform = 'scale(0.95)';
+                    });
+
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+                        
+                        const deltaX = e.clientX - startX;
+                        const deltaY = e.clientY - startY;
+                        
+                        const petContainer = this.elements.petContainer;
+                        petContainer.style.left = (startLeft + deltaX) + 'px';
+                        petContainer.style.top = (startTop + deltaY) + 'px';
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                        if (isDragging) {
+                            isDragging = false;
+                            this.elements.petCharacter.style.cursor = 'pointer';
+                            this.elements.petCharacter.style.transform = '';
+                            
+                            // 保存位置
+                            const petContainer = this.elements.petContainer;
+                            const position = {
+                                left: petContainer.style.left,
+                                top: petContainer.style.top
+                            };
+                            this.storage.save('petPosition', position);
+                        }
                     });
                 }
                 
@@ -3959,92 +4042,7 @@
                 // 自定义按钮
                 if (this.elements.customizePetBtn) {
                     this.elements.customizePetBtn.addEventListener('click', () => {
-                        this.openEditor();
-                    });
-                }
-                
-                // 编辑器事件
-                if (this.elements.savePetBtn) {
-                    this.elements.savePetBtn.addEventListener('click', () => {
-                        this.savePetConfig();
-                        this.closeEditor();
-                    });
-                }
-                
-                if (this.elements.cancelPetBtn) {
-                    this.elements.cancelPetBtn.addEventListener('click', () => {
-                        this.closeEditor();
-                    });
-                }
-
-                const animTestBtns = document.querySelectorAll('.animTestBtn');
-                if (animTestBtns.length > 0) {
-                    animTestBtns.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const action = btn.dataset.action;
-                            this.executeAction(action);
-                        });
-                    });
-                }
-
-                const headAmpSlider = document.getElementById('headAmp');
-                const armAmpSlider = document.getElementById('armAmp');
-                const legAmpSlider = document.getElementById('legAmp');
-                const tailAmpSlider = document.getElementById('tailAmp');
-                const animSpeedSlider = document.getElementById('animSpeed');
-                const transDurSlider = document.getElementById('transDur');
-
-                if (headAmpSlider) {
-                    headAmpSlider.addEventListener('input', (e) => {
-                        document.getElementById('headAmpVal').textContent = e.target.value + '°';
-                        if (this.skeleton) {
-                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
-                            this.skeleton.animationAmplitude.head = parseInt(e.target.value);
-                        }
-                    });
-                }
-                if (armAmpSlider) {
-                    armAmpSlider.addEventListener('input', (e) => {
-                        document.getElementById('armAmpVal').textContent = e.target.value + '°';
-                        if (this.skeleton) {
-                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
-                            this.skeleton.animationAmplitude.arm = parseInt(e.target.value);
-                        }
-                    });
-                }
-                if (legAmpSlider) {
-                    legAmpSlider.addEventListener('input', (e) => {
-                        document.getElementById('legAmpVal').textContent = e.target.value + '°';
-                        if (this.skeleton) {
-                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
-                            this.skeleton.animationAmplitude.leg = parseInt(e.target.value);
-                        }
-                    });
-                }
-                if (tailAmpSlider) {
-                    tailAmpSlider.addEventListener('input', (e) => {
-                        document.getElementById('tailAmpVal').textContent = e.target.value + '°';
-                        if (this.skeleton) {
-                            this.skeleton.animationAmplitude = this.skeleton.animationAmplitude || {};
-                            this.skeleton.animationAmplitude.tail = parseInt(e.target.value);
-                        }
-                    });
-                }
-                if (animSpeedSlider) {
-                    animSpeedSlider.addEventListener('input', (e) => {
-                        const speed = parseInt(e.target.value) / 100;
-                        document.getElementById('animSpeedVal').textContent = speed.toFixed(1) + 'x';
-                        if (this.skeleton) {
-                            this.skeleton.animationSpeed = speed;
-                        }
-                    });
-                }
-                if (transDurSlider) {
-                    transDurSlider.addEventListener('input', (e) => {
-                        document.getElementById('transDurVal').textContent = e.target.value + 'ms';
-                        if (this.stateMachine) {
-                            this.stateMachine.transitionDuration = parseInt(e.target.value);
-                        }
+                        this.showBubble('自定义功能暂未开放');
                     });
                 }
 
@@ -4262,32 +4260,14 @@
             
             executeActionAsync(action) {
                 return new Promise((resolve) => {
-                    const actionDurations = {
-                        dance: 3600,
-                        circle: 3000,
-                        greet: 1500,
-                        sit: 500,
-                        crouch: 500,
-                        lie: 500,
-                        stand: 500,
-                        handshake: 2000,
-                        heart: 2000,
-                        salute: 2000,
-                        pat: 2000,
-                        angry: 2000,
-                        jump: 2400,
-                        slideLeft: 1000,
-                        slideRight: 1000,
-                        follow: 5000,
-                        walk: 3000,
-                        patrol: 10000
-                    };
-
-                    const duration = actionDurations[action] || 1000;
-
                     if (this.skeleton && this.stateMachine) {
                         this.stateMachine.setState(action);
                         this.showBubble(this.getActionMessage(action));
+                        
+                        // 获取动画持续时间
+                        const animation = this.skeleton.animations[action];
+                        const duration = animation ? animation.duration + 1000 : 2000;
+                        
                         setTimeout(() => {
                             this.stateMachine.setState('idle');
                             if (resolve) resolve();
@@ -4321,194 +4301,46 @@
                 };
                 return messages[action] || '执行动作中...';
             }
-            
-            crouch(resolve) {
-                this.showBubble('我蹲下啦！');
-                this.elements.petCharacter.style.transform = 'scale(0.8) translateY(10px)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 2000);
-            }
-            
-            lie(resolve) {
-                this.showBubble('我趴下啦！');
-                this.elements.petCharacter.style.transform = 'scale(1.1) rotate(90deg)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            stand(resolve) {
-                this.showBubble('我站起来啦！');
-                this.elements.petCharacter.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 1000);
-            }
-            
-            handshake(resolve) {
-                this.showBubble('握个手吧！');
-                this.elements.petCharacter.style.animation = 'handshake 1s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            heart(resolve) {
-                this.showBubble('比心～');
-                this.elements.petCharacter.style.animation = 'heart 1s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            salute(resolve) {
-                this.showBubble('敬礼！');
-                this.elements.petCharacter.style.transform = 'scale(1) rotate(-10deg)';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.transform = '';
-                    if (resolve) resolve();
-                }, 2000);
-            }
-            
-            pat(resolve) {
-                this.showBubble('摸头～');
-                this.elements.petCharacter.style.animation = 'pat 1s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 2000);
-            }
-            
-            angry(resolve) {
-                this.showBubble('哼！我生气了！');
-                this.elements.petCharacter.style.animation = 'angry 0.5s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            jump(resolve) {
-                this.showBubble('跳起来！');
-                this.elements.petCharacter.style.animation = 'jump 1s infinite';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            slideLeft(resolve) {
-                this.showBubble('向左滑！');
-                this.elements.petCharacter.style.animation = 'slideLeft 1s forwards';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 1000);
-            }
-            
-            slideRight(resolve) {
-                this.showBubble('向右滑！');
-                this.elements.petCharacter.style.animation = 'slideRight 1s forwards';
-                setTimeout(() => {
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 1000);
-            }
-            
-            follow(resolve) {
-                this.showBubble('我来啦！');
-                // 保存绑定的事件处理函数
-                this.followMouseHandler = this.followMouse.bind(this);
-                // 实现跟随鼠标的逻辑
-                document.addEventListener('mousemove', this.followMouseHandler);
-                setTimeout(() => {
-                    document.removeEventListener('mousemove', this.followMouseHandler);
-                    // 清理动画ID
-                    if (this.followAnimationId) {
-                        cancelAnimationFrame(this.followAnimationId);
-                        this.followAnimationId = null;
-                    }
-                    if (resolve) resolve();
-                }, 5000);
-            }
-            
-            followMouse(e) {
-                const petContainer = this.elements.petContainer;
-                const petRect = petContainer.getBoundingClientRect();
-                const mouseX = e.clientX;
-                const mouseY = e.clientY;
+
+            showBubble(message) {
+                // 添加到消息队列
+                this.messageQueue.push(message);
                 
-                // 计算目标位置
-                const targetX = mouseX - petRect.width / 2;
-                const targetY = mouseY - petRect.height / 2;
-                
-                // 使用requestAnimationFrame优化平滑移动
-                if (!this.followAnimationId) {
-                    this.followAnimationId = requestAnimationFrame(() => {
-                        petContainer.style.transition = 'all 0.3s ease-out';
-                        petContainer.style.left = targetX + 'px';
-                        petContainer.style.top = targetY + 'px';
-                        this.followAnimationId = null;
-                    });
+                // 如果当前没有显示气泡，开始显示
+                if (!this.isShowingBubble) {
+                    this.processMessageQueue();
                 }
             }
-            
-            walk(resolve) {
-                this.showBubble('散步中～');
-                this.elements.petCharacter.style.animation = 'walk 1s infinite';
+
+            processMessageQueue() {
+                if (this.messageQueue.length === 0) {
+                    this.isShowingBubble = false;
+                    return;
+                }
+
+                this.isShowingBubble = true;
+                const message = this.messageQueue.shift();
                 
-                // 向前移动
-                const petContainer = this.elements.petContainer;
-                let currentX = parseInt(petContainer.style.left || '0');
-                const interval = setInterval(() => {
-                    currentX += 5;
-                    petContainer.style.left = currentX + 'px';
-                }, 50);
-                
-                setTimeout(() => {
-                    clearInterval(interval);
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 3000);
-            }
-            
-            patrol(resolve) {
-                this.showBubble('巡逻中～');
-                this.elements.petCharacter.style.animation = 'walk 1s infinite';
-                
-                const petContainer = this.elements.petContainer;
-                const screenWidth = window.innerWidth;
-                let currentX = 0;
-                let direction = 1;
-                
-                const interval = setInterval(() => {
-                    currentX += direction * 5;
-                    if (currentX >= screenWidth - 100) {
-                        direction = -1;
-                    } else if (currentX <= 0) {
-                        direction = 1;
-                    }
-                    petContainer.style.left = currentX + 'px';
-                }, 50);
-                
-                setTimeout(() => {
-                    clearInterval(interval);
-                    this.elements.petCharacter.style.animation = '';
-                    if (resolve) resolve();
-                }, 10000);
-            }
-            
-            showBubble(message) {
                 this.elements.petBubble.textContent = message;
                 this.elements.petBubble.style.display = 'block';
                 this.elements.petBubble.style.opacity = '0';
                 this.elements.petBubble.style.transform = 'scale(0.8) translateY(10px)';
+                
+                // 添加点击关闭功能
+                const closeBubble = () => {
+                    this.elements.petBubble.style.opacity = '0';
+                    this.elements.petBubble.style.transform = 'scale(0.8) translateY(10px)';
+                    setTimeout(() => {
+                        this.elements.petBubble.style.display = 'none';
+                        this.elements.petBubble.style.opacity = '';
+                        this.elements.petBubble.style.transform = '';
+                        this.elements.petBubble.removeEventListener('click', closeBubble);
+                        // 处理下一条消息
+                        this.processMessageQueue();
+                    }, 300);
+                };
+
+                this.elements.petBubble.addEventListener('click', closeBubble);
                 
                 // 打开动画
                 setTimeout(() => {
@@ -4516,16 +4348,12 @@
                     this.elements.petBubble.style.transform = 'scale(1) translateY(0)';
                 }, 10);
                 
-                // 关闭动画
+                // 自动关闭（如果用户没有点击）
                 setTimeout(() => {
-                    this.elements.petBubble.style.opacity = '0';
-                    this.elements.petBubble.style.transform = 'scale(0.8) translateY(10px)';
-                    setTimeout(() => {
-                        this.elements.petBubble.style.display = 'none';
-                        this.elements.petBubble.style.opacity = '';
-                        this.elements.petBubble.style.transform = '';
-                    }, 300);
-                }, 2700);
+                    if (this.elements.petBubble.style.display === 'block') {
+                        closeBubble();
+                    }
+                }, 5000);
             }
             
             togglePetWindow() {
@@ -4550,318 +4378,23 @@
                 }
             }
             
-            // 编辑器相关方法
-            openEditor() {
-                // 添加打开动画
-                this.elements.petEditor.style.display = 'flex';
-                this.elements.petEditor.style.opacity = '0';
-                setTimeout(() => {
-                    this.elements.petEditor.style.opacity = '1';
-                }, 10);
-                this.updateEditPanel();
-                this.updatePreview();
-            }
-            
-            closeEditor() {
-                // 添加关闭动画
-                this.elements.petEditor.style.opacity = '0';
-                setTimeout(() => {
-                    this.elements.petEditor.style.display = 'none';
-                    this.elements.petEditor.style.opacity = '';
-                }, 300);
-            }
-            
-            selectPetType(type) {
-                this.currentPetType = type;
-                this.petConfig.type = type;
-                this.updateEditPanel();
-                this.updatePreview();
-            }
-            
-            updateEditPanel() {
-                const type = this.currentPetType;
-                let content = '';
-                
-                switch (type) {
-                    case 'dog':
-                    case 'cat':
-                        content = `
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div>
-                                    <h4 style="color: var(--text-color); margin-top: 0; margin-bottom: 8px;">头部图片</h4>
-                                    <input type="file" id="headUpload" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px;">
-                                    <button id="autoFitBtn" style="margin-top: 8px; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">自动适配</button>
-                                </div>
-                            </div>
-                        `;
-                        break;
-                    case 'human':
-                        content = `
-                            <div style="display: flex; flex-direction: column; gap: 15px;">
-                                <div>
-                                    <h4 style="color: var(--text-color); margin-top: 0; margin-bottom: 8px;">部位编辑</h4>
-                                    <select id="partSelect" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-color);">
-                                        <option value="head">头部</option>
-                                        <option value="body">躯干</option>
-                                        <option value="arm_left">左臂</option>
-                                        <option value="arm_right">右臂</option>
-                                        <option value="leg_left">左腿</option>
-                                        <option value="leg_right">右腿</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <input type="file" id="partUpload" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px;">
-                                </div>
-                                <div style="display: flex; gap: 10px;">
-                                    <button id="mirrorBtn" style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">镜像</button>
-                                    <button id="resetBtn" style="flex: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--btn-bg); color: var(--text-color); cursor: pointer; font-size: 12px;">重置</button>
-                                </div>
-                            </div>
-                        `;
-                        break;
-                }
-                
-                this.elements.editPanelContent.innerHTML = content;
-                
-                // 绑定上传事件
-                const headUpload = document.getElementById('headUpload');
-                if (headUpload) {
-                    headUpload.addEventListener('change', (e) => this.handleHeadUpload(e));
-                }
-                
-                const partUpload = document.getElementById('partUpload');
-                if (partUpload) {
-                    partUpload.addEventListener('change', (e) => this.handlePartUpload(e));
-                }
-            }
-            
-            updatePreview() {
-                const type = this.currentPetType;
-                let emoji = '🐱';
-                
-                switch (type) {
-                    case 'dog':
-                        emoji = '🐶';
-                        break;
-                    case 'cat':
-                        emoji = '🐱';
-                        break;
-                    case 'human':
-                        emoji = '👤';
-                        break;
-                }
-                
-                this.elements.petPreviewCharacter.innerHTML = emoji;
-            }
-            
-            handleHeadUpload(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        this.petConfig.head = event.target.result;
-                        this.updatePreview();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-            
-            handlePartUpload(e) {
-                const file = e.target.files[0];
-                const partSelect = document.getElementById('partSelect');
-                const part = partSelect.value;
-                
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        this.petConfig.parts[part] = event.target.result;
-                        this.updatePreview();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-            
             loadPetConfig() {
                 try {
-                    const savedConfig = this.storage.load(Constants.STORAGE_KEYS.PET_CONFIG, null);
-                    if (savedConfig) {
-                        this.petConfig = savedConfig;
-                        this.currentPetType = this.petConfig.type;
-                        this.updatePreview();
-                    }
-
-                    const savedPosition = this.storage.load(Constants.STORAGE_KEYS.PET_POSITION, null);
+                    const savedPosition = this.storage.load('petPosition', null);
                     if (savedPosition) {
                         const petContainer = this.elements.petContainer;
                         petContainer.style.left = savedPosition.left || '80%';
                         petContainer.style.top = savedPosition.top || '80%';
                     }
-
-                    this.syncPetConfigFromCloud();
                 } catch (error) {
                     console.error('加载宠物配置失败:', error);
-                }
-            }
-
-            savePetConfig() {
-                try {
-                    this.storage.save(Constants.STORAGE_KEYS.PET_CONFIG, this.petConfig);
-
-                    const petContainer = this.elements.petContainer;
-                    const position = {
-                        left: petContainer.style.left,
-                        top: petContainer.style.top
-                    };
-                    this.storage.save(Constants.STORAGE_KEYS.PET_POSITION, position);
-
-                    this.syncPetConfigToCloud();
-
-                    this.showBubble('宠物形象已保存！');
-                } catch (error) {
-                    console.error('保存宠物配置失败:', error);
-                    this.showBubble('保存失败，请重试');
-                }
-            }
-            
-            async syncPetConfigToCloud() {
-                try {
-                    const user = this.getCurrentUser();
-                    if (!user) return;
-
-                    if (!this.petConfig || typeof this.petConfig !== 'object') {
-                        console.error('宠物配置数据无效');
-                        return;
-                    }
-
-                    const petConfigData = {
-                        user_id: user.id,
-                        pet_type: this.petConfig.type || 'cat',
-                        parts_json: JSON.stringify(this.petConfig),
-                        position_x: this.elements.petContainer.style.left || '80%',
-                        position_y: this.elements.petContainer.style.top || '80%',
-                        updated_at: new Date().toISOString()
-                    };
-
-                    let retries = 3;
-                    let lastError;
-                    const supabase = this.getSupabaseClient();
-
-                    while (retries > 0) {
-                        try {
-                            const { data: existingConfig, error: fetchError } = await supabase
-                                .from('pet_config')
-                                .select('id')
-                                .eq('user_id', user.id)
-                                .single();
-
-                            if (fetchError && fetchError.code !== 'PGRST116') {
-                                throw fetchError;
-                            }
-
-                            if (existingConfig) {
-                                await supabase
-                                    .from('pet_config')
-                                    .update(petConfigData)
-                                    .eq('user_id', user.id);
-                            } else {
-                                await supabase
-                                    .from('pet_config')
-                                    .insert(petConfigData);
-                            }
-
-                            return;
-                        } catch (error) {
-                            lastError = error;
-                            retries--;
-                            if (retries > 0) {
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                            }
-                        }
-                    }
-
-                    throw lastError;
-                } catch (error) {
-                    console.error('同步宠物配置到云端失败:', error);
-                    // 同步失败不影响本地使用
-                }
-            }
-            
-            async syncPetConfigFromCloud() {
-                try {
-                    const user = this.getCurrentUser();
-                    if (!user) return;
-
-                    let retries = 3;
-                    let lastError;
-                    const supabase = this.getSupabaseClient();
-
-                    while (retries > 0) {
-                        try {
-                            const { data: petConfig, error } = await supabase
-                                .from('pet_config')
-                                .select('*')
-                                .eq('user_id', user.id)
-                                .single();
-
-                            if (error) {
-                                if (error.code === 'PGRST116') {
-                                    return;
-                                }
-                                throw error;
-                            }
-
-                            if (!petConfig || !petConfig.parts_json) {
-                                console.error('云端宠物配置数据无效');
-                                return;
-                            }
-
-                            try {
-                                const parsedConfig = JSON.parse(petConfig.parts_json);
-                                if (parsedConfig && typeof parsedConfig === 'object') {
-                                    this.petConfig = parsedConfig;
-                                    this.currentPetType = this.petConfig.type || 'cat';
-                                } else {
-                                    console.error('解析云端宠物配置失败');
-                                    return;
-                                }
-                            } catch (parseError) {
-                                console.error('解析宠物配置JSON失败:', parseError);
-                                return;
-                            }
-
-                            if (petConfig.position_x && petConfig.position_y) {
-                                const petContainer = this.elements.petContainer;
-                                petContainer.style.left = petConfig.position_x;
-                                petContainer.style.top = petConfig.position_y;
-                            }
-
-                            this.storage.save(Constants.STORAGE_KEYS.PET_CONFIG, this.petConfig);
-
-                            this.updatePreview();
-                            return;
-                        } catch (error) {
-                            lastError = error;
-                            retries--;
-                            if (retries > 0) {
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                            }
-                        }
-                    }
-
-                    throw lastError;
-                } catch (error) {
-                    console.error('从云端同步宠物配置失败:', error);
                 }
             }
         }
 
     // 初始化宠物模块
     const petModule = new PetModule();
-
-    // 初始化应用（使用DOMContentLoaded确保DOM加载完成）
-    document.addEventListener('DOMContentLoaded', () => {
-        App.init();
-    });
+    // 不再调用 App.init()，主脚本会负责初始化
 </script>
 </body>
 </html>
